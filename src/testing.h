@@ -1,0 +1,13 @@
+// this is an [include guard](https://en.wikipedia.org/wiki/Include_guard)
+#ifndef TESTING_H
+#define TESTING_H
+
+// routine for testing the reliability of collision avoidance
+void testCollisionAvoidance();
+
+// routine for testing the reliability of the sonar subsystem
+void testSonarReliability();
+
+void testConstantMotion(int motor1Speed, int motor2Speed, unsigned long time);
+
+#endif
