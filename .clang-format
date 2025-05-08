@@ -7,10 +7,11 @@ IndentWidth: 4
 ColumnLimit: 120
 
 # Misc
+AccessModifierOffset: -4
 AlignAfterOpenBracket: BlockIndent
 
 SpacesInLineCommentPrefix:
-  Minimum: 1
+  Minimum: 0
 
 # Disable brace wrapping (OTB style)
 BraceWrapping:

@@ -25,6 +25,10 @@ using namespace globals;
 // include function declarations for this file
 #include "testing.h"
 
+// buffer used for clearing out newline chars in the serial buffer
+const int CLEAR_BUF_SIZE = 2;
+char serialClearBuf[CLEAR_BUF_SIZE];
+
 /****************** ASSESSMENT LEVELS ******************************/
 
 // **LEVEL 2**
@@ -77,7 +81,7 @@ SonarReading currentReading;
 // Arduino if it detects walls closer than 3.5cm
 void testCollisionAvoidance() {
     if (globals::RUN_START) {
-        Serial.println(F("[__TESTING__] Testing collision avoidance"));
+        Serial.println(F("[___TEST] Testing collision avoidance"));
         pinMode(LED_BUILTIN, OUTPUT);
 
         // pause for 1s, to allow for moving into position
@@ -142,8 +146,50 @@ void testCollisionAvoidance() {
 }
 
 // **SERVO ANGLE TEST**
+
+// RESULTS
+// on upper side, starts at 1544 ms
+// on lower side, starts at 1424 ms
+
+// buffer used for parsing ints
+const int INT_BUF_SIZE = 7;
+char intBuf[INT_BUF_SIZE];
+
 void testServoAngle() {
-    Serial.
+    if (globals::RUN_START) {
+        Serial.println(F("[___TEST] Testing servo movements angle"));
+
+        delay(1000);
+
+        globals::RUN_START = false;
+    }
+
+    // ALog.infoln("Current angle is %d", globals::SERVO_ANGLE);
+
+    Serial.println(F("[___TEST] Enter servo microseconds pulse width"));
+    //Serial.println(F("[___TEST] Enter a spin in the format `servo_ms,spin_time\\n`"));
+    while (!Serial.available()) {
+        ; // wait for a number to be sent on the Serial Monitor
+    }
+    size_t len = Serial.readBytesUntil(',', intBuf, (INT_BUF_SIZE - 1));
+    size_t idx = min(len, (INT_BUF_SIZE - 1));
+    intBuf[idx] = '\0'; // null terminate the string
+    int servo_ms = atoi(intBuf);
+
+    ALog.infoln("got servo_ms %d", servo_ms);
+
+    /*
+    len = Serial.readBytesUntil('\n', intBuf, (INT_BUF_SIZE - 1));
+    idx = min(len, (INT_BUF_SIZE - 1));
+    intBuf[idx] = '\0'; // null terminate the string
+    int spin_time = atoi(intBuf);
+
+    ALog.infoln("got servo_ms %d, spin_time %d", servo_ms, spin_time);
+    */
+
+    setServoAngle(servo_ms);
+    //delay(spin_time);
+    //setServoAngle(1484);
 }
 
 // **SONAR RELIABILITY TEST**
@@ -151,14 +197,10 @@ void testServoAngle() {
 // number of sonar measurements to take in each set
 const int8_t SONAR_MEASUREMENTS = 3;
 
-// buffer used for clearing out newline chars in the serial buffer
-const int CLEAR_BUF_SIZE = 2;
-char serialClearBuf[CLEAR_BUF_SIZE];
-
 // routine for testing the reliability of the sonar subsystem
 void testSonarReliability() {
     if (globals::RUN_START) {
-        Serial.println(F("[__TESTING__] Testing sonar subsystem reliability"));
+        Serial.println(F("[___TEST] Testing sonar subsystem reliability"));
 
         // move the servo to test how securely the sonar module is attached
         setServoAngle(0);
@@ -171,7 +213,7 @@ void testSonarReliability() {
     }
 
     Serial.println("");
-    Serial.println(F("[__TESTING__] Press <Enter> to start a new test."));
+    Serial.println(F("[___TEST] Press <Enter> to start a new test."));
     while (!Serial.available()) {
     }
     Serial.readBytesUntil('\n', serialClearBuf, CLEAR_BUF_SIZE);
@@ -179,9 +221,9 @@ void testSonarReliability() {
     for (int8_t idx = 0; idx < SONAR_MEASUREMENTS; idx += 1) {
         float dist = pollDistance();
         if (dist == 0.0) {
-            Serial.println("[__TESTING__] failed measurement");
+            Serial.println("[___TEST] failed measurement");
         } else {
-            Serial.print("[__TESTING__] measurement: ");
+            Serial.print("[___TEST] measurement: ");
             Serial.println(dist, 4);
         }
     }
@@ -193,7 +235,7 @@ void testSonarReliability() {
 // Used for testing deviation when driving in a straight line and pivoting.
 void testConstantMotion(int motor1Speed, int motor2Speed, unsigned long time) {
     if (globals::RUN_START) {
-        Serial.println("[__TESTING__] Testing straight line deviation");
+        Serial.println("[___TEST] Testing straight line deviation");
     }
 
     // pause for 1s, to allow for moving into position

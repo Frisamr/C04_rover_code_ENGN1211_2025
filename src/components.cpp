@@ -57,7 +57,7 @@ int8_t sonarSweep(SonarReading *result_ptr) {
     int startAngle = 0;
     int increment = 45;
 
-    if (SERVO_ANGLE > 90) {
+    if (globals::SERVO_ANGLE > 90) {
         startAngle = 180;
         increment = -45;
     }
@@ -73,19 +73,6 @@ int8_t sonarSweep(SonarReading *result_ptr) {
     }
 
     return errno;
-}
-
-void setServoAngle(int angle) {
-    ALog.traceln(F("`setServoAngle` called with angle %d, current angle is %d"), angle, SERVO_ANGLE);
-
-    globals::THE_SERVO.write(angle);
-    int angleDiff = abs(SERVO_ANGLE - angle);
-    int rotationTime = (angleDiff * globals::MILLIS_PER_DEGREE) + 30; // add an extra 30ms for safety
-
-    ALog.verboseln(F("delay to allow for rotation: %d"), rotationTime);
-    delay(rotationTime);
-
-    SERVO_ANGLE = angle;
 }
 
 float pollSonarModuleRaw() {
@@ -145,6 +132,20 @@ float pollDistance() {
     return finalDist;
 }
 
+void setServoAngle(int angle) {
+    ALog.traceln(F("`setServoAngle` called with angle %d, current ms is %d"), angle, globals::SERVO_ANGLE);
+
+    globals::THE_SERVO.writeMicroseconds(angle);
+
+    int angleDiff = abs(globals::SERVO_ANGLE - angle);
+    int rotationTime = (angleDiff * globals::MILLIS_PER_DEGREE) + 30; // add an extra 30ms for safety
+
+    ALog.verboseln(F("delay to allow for rotation: %d"), rotationTime);
+    // delay(rotationTime);
+
+    globals::SERVO_ANGLE = angle;
+}
+
 void initSonarSystem() {
     ALog.traceln("`initSonarSystem()` called");
 
@@ -158,7 +159,11 @@ void initSonarSystem() {
     pinMode(constants::TRIGGER_PIN, OUTPUT);
     digitalWrite(constants::TRIGGER_PIN, LOW); // start the trigger pin on low, ready to trigger the module
 
-    globals::THE_SERVO.attach(constants::SERVO_PIN); // attach the servo to the servo pin
+    globals::THE_SERVO.attach(constants::SERVO_PIN, 1000, 2000); // attach the servo to the servo pin
+
+    // set a starting angle
+    globals::THE_SERVO.writeMicroseconds(1500);
+    globals::SERVO_ANGLE = 90;
 }
 
 /****************** MOTOR CONTROL FUNCTIONS ******************************/

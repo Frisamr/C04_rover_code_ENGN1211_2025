@@ -43,6 +43,9 @@ bool globals::RUN_START = true;
 // global sonar system object
 Servo globals::THE_SERVO = Servo();
 
+// dummy servo angle value (this will be overridden)
+int globals::SERVO_ANGLE = 0;
+
 /****************** SETUP ******************************/
 
 // forward declaration
@@ -57,12 +60,15 @@ void setup() {
 
     // setup logging
     ALog.setPrefix(printPrefix);                       // set custom prefix
-    ALog.begin(LOG_LEVEL_TRACE, &Serial, true, false); // logging settings: level, output, show level, show colour
+    ALog.begin(LOG_LEVEL_INFO, &Serial, false, false); // logging settings: level, output, show level, show colour
 
     // initialise the motors and sonar module (set the control pins to output mode)
     initMotor(constants::LEFT_MOTOR);
     initMotor(constants::RIGHT_MOTOR);
     initSonarSystem();
+
+    delay(2000);
+    globals::THE_SERVO.write(90);
 }
 
 /****************** MAIN LOOP ******************************/
@@ -71,14 +77,15 @@ void setup() {
 void loop() {
     /* test level demos */
 
-    // demoLevel_1_part2();
-    // demoLevel_1_part1();
+    //demoLevel_1_part2();
+    //demoLevel_1_part1();
 
     /* testing routines */
 
-    testCollisionAvoidance();
-    // testSonarReliability();
-    // testConstantMotion(255, 255, 10 * globals::MILLIS_PER_CM);
+    testServoAngle();
+    //testCollisionAvoidance();
+    //testSonarReliability();
+    //testConstantMotion(255, 255, 10 * globals::MILLIS_PER_CM);
 }
 
 /****************** CUSTOM LOGGING PREFIX ******************************/
@@ -88,22 +95,22 @@ void printPrefix(Print *_logOutput, int logLevel) {
     switch (logLevel) {
     default:
     case 0:
-        _logOutput->print("[SILENT]  ");
+        _logOutput->print(" [SILENT] ");
         break;
     case 1:
-        _logOutput->print("[FATAL]   ");
+        _logOutput->print("  [FATAL] ");
         break;
     case 2:
-        _logOutput->print("[ERROR]   ");
+        _logOutput->print("  [ERROR] ");
         break;
     case 3:
         _logOutput->print("[WARNING] ");
         break;
     case 4:
-        _logOutput->print("[INFO]    ");
+        _logOutput->print("   [INFO] ");
         break;
     case 5:
-        _logOutput->print("[TRACE]   ");
+        _logOutput->print("  [TRACE] ");
         break;
     case 6:
         _logOutput->print("[VERBOSE] ");

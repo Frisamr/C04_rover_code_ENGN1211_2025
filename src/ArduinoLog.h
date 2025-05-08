@@ -404,7 +404,8 @@ private:
                 }
             }
 
-            if (_prefix != NULL && _showLevel) {
+            // if (_prefix != NULL && _showLevel) {
+            if (_prefix != NULL) {
                 for (int i = 0; i < _handlerCount; i++) {
                     if (_logOutputs[i]) {
                         _prefix(_logOutputs[i], level);
