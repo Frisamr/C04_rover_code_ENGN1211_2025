@@ -5,10 +5,6 @@
 #include <inttypes.h>
 #include <Servo.h>
 
-#include "globals.h"
-#include "motor_ctl.h"
-#include "sonar_system.h"
-
 
 /****************** OTHER ******************************/
 
@@ -20,7 +16,7 @@ enum struct RoverAction {
   sweepScan,
 };
 
-void driveRover(int leftMotorSpeed, int rightMotorSpeed, unsigned long time);
+void driveRover(int LEFT_MOTORSpeed, int RIGHT_MOTORSpeed, unsigned long time);
 
 
-#endif
+#endif // ROVER_OP_H

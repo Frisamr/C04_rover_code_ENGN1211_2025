@@ -1,0 +1,34 @@
+---
+# We'll use defaults from the LLVM style, but with
+#  - 4 spaces columns indentation, and
+#  - 120 column limit
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 120
+
+# Misc
+AlignAfterOpenBracket: BlockIndent
+
+SpacesInLineCommentPrefix:
+  Minimum: 1
+
+# Disable brace wrapping (OTB style)
+BraceWrapping:
+  AfterCaseLabel: false
+  AfterClass: false
+  AfterControlStatement: Never
+  AfterEnum: false
+  AfterFunction: false
+  AfterNamespace: false
+  AfterObjCDeclaration: false
+  AfterStruct: false
+  AfterUnion: false
+  AfterExternBlock: false
+  BeforeCatch: false
+  BeforeElse: false
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true

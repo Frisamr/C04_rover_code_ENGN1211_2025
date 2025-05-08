@@ -8,6 +8,9 @@ void testCollisionAvoidance();
 // routine for testing the reliability of the sonar subsystem
 void testSonarReliability();
 
+// routine for checking the angle of the servo
+void testServoAngle();
+
 void testConstantMotion(int motor1Speed, int motor2Speed, unsigned long time);
 
-#endif
+#endif // TESTING_H
