@@ -25,10 +25,10 @@ using namespace globals;
 // these are global variables declared in `global.h`
 
 // approximately correct
-unsigned long globals::MILLIS_PER_CM = 200;
+unsigned long globals::MILLIS_PER_CM = 182;
 
 // approximately correct
-unsigned long globals::MILLIS_PER_DEGREE = 21;
+unsigned long globals::MILLIS_PER_DEGREE = 19;
 
 // set so the rover will drive approx 0.5cm
 unsigned long globals::SHORT_STEP_TIME = globals::MILLIS_PER_CM / 2;
@@ -37,6 +37,7 @@ unsigned long globals::SHORT_STEP_TIME = globals::MILLIS_PER_CM / 2;
 unsigned long globals::LONG_STEP_TIME = globals::MILLIS_PER_CM * 3;
 
 /****************** OTHER GLOBALS ******************************/
+// These will be overwritten as the program runs. Don't change them.
 
 bool globals::RUN_START = true;
 
@@ -44,19 +45,17 @@ bool globals::RUN_START = true;
 Servo globals::THE_SERVO = Servo();
 
 // dummy servo angle value (this will be overridden)
-int globals::SERVO_ANGLE = 0;
+int globals::SERVO_ANGLE = 90;
 
 /****************** SETUP ******************************/
 
-// forward declaration
-extern void printPrefix(Print *_logOutput, int logLevel);
+// forward declare this function so we can use it in setup()
+// full function definition at the end of this file
+void printPrefix(Print *_logOutput, int logLevel);
 
 void setup() {
     // open the serial port
     Serial.begin(9600);
-    while (!Serial) {
-        ; // wait for serial port to connect. Needed for native USB
-    }
 
     // setup logging
     ALog.setPrefix(printPrefix);                       // set custom prefix
@@ -66,9 +65,6 @@ void setup() {
     initMotor(constants::LEFT_MOTOR);
     initMotor(constants::RIGHT_MOTOR);
     initSonarSystem();
-
-    delay(2000);
-    globals::THE_SERVO.write(90);
 }
 
 /****************** MAIN LOOP ******************************/
@@ -94,25 +90,25 @@ void printPrefix(Print *_logOutput, int logLevel) {
     // Show log description based on log level
     switch (logLevel) {
     default:
-    case 0:
+    case LOG_LEVEL_SILENT:
         _logOutput->print(" [SILENT] ");
         break;
-    case 1:
+    case LOG_LEVEL_FATAL:
         _logOutput->print("  [FATAL] ");
         break;
-    case 2:
+    case LOG_LEVEL_ERROR:
         _logOutput->print("  [ERROR] ");
         break;
-    case 3:
+    case LOG_LEVEL_WARNING:
         _logOutput->print("[WARNING] ");
         break;
-    case 4:
+    case LOG_LEVEL_INFO:
         _logOutput->print("   [INFO] ");
         break;
-    case 5:
+    case LOG_LEVEL_TRACE:
         _logOutput->print("  [TRACE] ");
         break;
-    case 6:
+    case LOG_LEVEL_VERBOSE:
         _logOutput->print("[VERBOSE] ");
         break;
     }

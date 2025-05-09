@@ -2,6 +2,13 @@
 #ifndef TESTING_H
 #define TESTING_H
 
+/****************** ASSESSMENT LEVELS ******************************/
+
+void demoLevel_1_part1();
+void demoLevel_1_part2();
+
+/****************** OTHER TESTING ******************************/
+
 // routine for testing the reliability of collision avoidance
 void testCollisionAvoidance();
 

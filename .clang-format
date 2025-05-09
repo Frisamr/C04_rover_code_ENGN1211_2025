@@ -1,13 +1,15 @@
 ---
-# We'll use defaults from the LLVM style, but with
-#  - 4 spaces columns indentation, and
-#  - 120 column limit
+# We'll use defaults from the LLVM style, but with a few tweaks
 BasedOnStyle: LLVM
+# 4-space indenting
 IndentWidth: 4
+AccessModifierOffset: -4
+
 ColumnLimit: 120
 
-# Misc
-AccessModifierOffset: -4
+# indent members in namespaces
+NamespaceIndentation: All
+
 AlignAfterOpenBracket: BlockIndent
 
 SpacesInLineCommentPrefix:

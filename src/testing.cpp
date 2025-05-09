@@ -1,10 +1,11 @@
 /****************** IMPORTS AND BASE SETUP ******************************/
 // import Arduino libs
-#include "HardwareSerial.h"
-#include "pins_arduino.h"
 #include <Arduino.h>
+
+// utils for storing strings in prog mem (for mem optimisation)
 #include <WString.h>
 #include <avr/pgmspace.h>
+
 // better int types
 #include <inttypes.h>
 
@@ -35,23 +36,6 @@ char serialClearBuf[CLEAR_BUF_SIZE];
 
 // **LEVEL 1**
 
-void demoLevel_1_part2() {
-    if (globals::RUN_START) {
-        ALog.infoln(F("Level 1, part 2"));
-        delay(300);
-    }
-
-    for (int idx = 0; idx < 4; idx += 1) {
-        driveRover(255, 247, 30 * globals::MILLIS_PER_CM);
-        delay(50);
-        driveRover(255, -255, 90 * globals::MILLIS_PER_DEGREE);
-        delay(50);
-    }
-
-    // wait for 1 minute
-    delay(1UL * 60 * 1000);
-}
-
 void demoLevel_1_part1() {
     if (globals::RUN_START) {
         ALog.infoln(F("Level 1, part 1"));
@@ -61,6 +45,23 @@ void demoLevel_1_part1() {
     driveRover(255, 255, 3000);   // drive forward in a straight line,
     delay(3000);                  // stop for 3 seconds
     driveRover(-255, -255, 3000); // reverse back to starting position
+
+    // wait for 1 minute
+    delay(1UL * 60 * 1000);
+}
+
+void demoLevel_1_part2() {
+    if (globals::RUN_START) {
+        ALog.infoln(F("Level 1, part 2"));
+        delay(300);
+    }
+
+    for (int idx = 0; idx < 4; idx += 1) {
+        driveRover(255, 247, 30 * globals::MILLIS_PER_CM);
+        delay(50);
+        driveRover(-255, 255, 90 * globals::MILLIS_PER_DEGREE);
+        delay(50);
+    }
 
     // wait for 1 minute
     delay(1UL * 60 * 1000);
@@ -147,49 +148,30 @@ void testCollisionAvoidance() {
 
 // **SERVO ANGLE TEST**
 
-// RESULTS
-// on upper side, starts at 1544 ms
-// on lower side, starts at 1424 ms
-
 // buffer used for parsing ints
 const int INT_BUF_SIZE = 7;
 char intBuf[INT_BUF_SIZE];
 
 void testServoAngle() {
     if (globals::RUN_START) {
-        Serial.println(F("[___TEST] Testing servo movements angle"));
-
+        Serial.println(F("[___TEST] Testing servo angle PWM behaviour"));
         delay(1000);
-
         globals::RUN_START = false;
     }
 
-    // ALog.infoln("Current angle is %d", globals::SERVO_ANGLE);
-
-    Serial.println(F("[___TEST] Enter servo microseconds pulse width"));
-    //Serial.println(F("[___TEST] Enter a spin in the format `servo_ms,spin_time\\n`"));
+    Serial.println(F("[___TEST] Enter servo angle/microseconds pulse length"));
     while (!Serial.available()) {
         ; // wait for a number to be sent on the Serial Monitor
     }
     size_t len = Serial.readBytesUntil(',', intBuf, (INT_BUF_SIZE - 1));
     size_t idx = min(len, (INT_BUF_SIZE - 1));
     intBuf[idx] = '\0'; // null terminate the string
-    int servo_ms = atoi(intBuf);
+    int input_num = atoi(intBuf);
 
-    ALog.infoln("got servo_ms %d", servo_ms);
+    ALog.infoln("got angle/microseconds %d", input_num);
 
-    /*
-    len = Serial.readBytesUntil('\n', intBuf, (INT_BUF_SIZE - 1));
-    idx = min(len, (INT_BUF_SIZE - 1));
-    intBuf[idx] = '\0'; // null terminate the string
-    int spin_time = atoi(intBuf);
-
-    ALog.infoln("got servo_ms %d, spin_time %d", servo_ms, spin_time);
-    */
-
-    setServoAngle(servo_ms);
-    //delay(spin_time);
-    //setServoAngle(1484);
+    //globals::THE_SERVO.writeMicroseconds(input_num);
+    globals::THE_SERVO.write(input_num);
 }
 
 // **SONAR RELIABILITY TEST**
@@ -235,7 +217,7 @@ void testSonarReliability() {
 // Used for testing deviation when driving in a straight line and pivoting.
 void testConstantMotion(int motor1Speed, int motor2Speed, unsigned long time) {
     if (globals::RUN_START) {
-        Serial.println("[___TEST] Testing straight line deviation");
+        Serial.println("[___TEST] Testing constant motion");
     }
 
     // pause for 1s, to allow for moving into position
