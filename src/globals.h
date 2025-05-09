@@ -16,10 +16,10 @@ namespace constants {
     /****************** MAZE-SOLVING CONFIG ******************************/
 
     // how close the rover will drive to a wall before slowing down
-    constexpr float SLOW_THRESHOLD = 4.5;
+    constexpr float SLOW_THRESHOLD_cm = 4.5;
 
     // how close the rover will drive to a wall before stopping
-    constexpr float STOP_THRESHOLD = 3.5;
+    constexpr float STOP_THRESHOLD_cm = 3.5;
 
     /****************** SONAR CONFIG ******************************/
 
@@ -27,7 +27,7 @@ namespace constants {
     // This prevents the sonar module from being polled too quickly and
     // the previous pulse interfering with the next measurement.
     // This variable controls the delay.
-    constexpr int POLLING_COOLDOWN_MS = 80;
+    constexpr int POLL_COOLDOWN_ms = 80;
 
     // Min number of times the sonar subsytem will poll the sonar module.
     // If the sonar is polled multiple times, the final calculated distance will be the
@@ -36,12 +36,17 @@ namespace constants {
     // Max number of times the sonar subsystem will re-try polling the sonar module when measurements fail.
     constexpr int8_t MAX_POLL_ATTEMPTS = 10;
 
+    // The nominal maximum operating distance the HC-SR04 is 400cm. The full length of the maze is just under 80cm.
+    // So if we read a value of, say, 500cm or 900cm, clearly something has gone wrong.
+    // This variable sets the threshold for whether a distance is consider valid or not.
+    constexpr float MAX_VALID_SONAR_DIST = 900.0;
+
     /****************** SERVO CONFIG ******************************/
 
     // Microseconds pulse width corresponding to the min (0 degrees) angle of the servo.
-    constexpr int SERVO_MIN_US = 590;
+    constexpr int SERVO_MIN_us = 590;
     // Microseconds pulse width corresponding to the max (180 degrees) angle of the servo.
-    constexpr int SERVO_MAX_US = 2530;
+    constexpr int SERVO_MAX_us = 2530;
 
     // After setting the servo angle, we need to wait a bit for it to finishing turning.
     // According to the datasheet, the servo rotates at 500 degrees per second at 6V. This equates to 2ms per degree.
@@ -88,7 +93,7 @@ namespace globals {
     extern MotorSettings MOTOR_CONFIG;
 
     // how long (in ms) it takes the rover to drive 1cm forward at full speed
-    extern unsigned long MICROS_PER_CM;
+    extern unsigned long MICROS_PER_cm;
 
     // how long (in ms) it takes the rover to rotate 1 degree at full speed
     extern unsigned long MICROS_PER_DEGREE;

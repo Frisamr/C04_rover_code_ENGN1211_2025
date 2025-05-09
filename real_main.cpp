@@ -25,7 +25,7 @@ using namespace globals;
 // these are global variables declared in `global.h`
 
 // approximately correct
-unsigned long globals::MICROS_PER_CM = 182000;
+unsigned long globals::MICROS_PER_cm = 182000;
 
 // approximately correct
 unsigned long globals::MICROS_PER_DEGREE = 19000;
@@ -38,10 +38,10 @@ MotorSettings globals::MOTOR_CONFIG = {
 };
 
 // set so the rover will drive approx 0.5cm
-unsigned long globals::SHORT_STEP_TIME = globals::MICROS_PER_CM / 2;
+unsigned long globals::SHORT_STEP_TIME = globals::MICROS_PER_cm / 2;
 
 // set so the rover will drive 3cm
-unsigned long globals::LONG_STEP_TIME = globals::MICROS_PER_CM * 3;
+unsigned long globals::LONG_STEP_TIME = globals::MICROS_PER_cm * 3;
 
 /****************** OTHER GLOBALS ******************************/
 // These will be overwritten as the program runs. Don't change them.
@@ -65,7 +65,7 @@ void setup() {
     Serial.begin(9600);
 
     // setup logging
-    ALog.setPrefix(printPrefix);                       // set custom prefix
+    ALog.setPrefix(printPrefix);                       // set custom prefix that shows log level
     ALog.begin(LOG_LEVEL_INFO, &Serial, false, false); // logging settings: level, output, show level, show colour
 
     // initialise the motors and sonar module (set the control pins to output mode)
@@ -84,11 +84,11 @@ void loop() {
 
     /* testing routines */
 
-    //testServoAngle();
-    //testCollisionAvoidance();
     //testSonarReliability();
-    //testMovement(RoverMovement::driveForward, 10 * globals::MICROS_PER_CM);
-    testMovement(RoverMovement::turnLeft, 90 * globals::MICROS_PER_DEGREE);
+    testSonarSweep();
+    //testServoAngle();
+    //testMovement(RoverMove::driveForward, 10 * globals::MICROS_PER_cm);
+    //testMovement(RoverMove::turnLeft, 90 * globals::MICROS_PER_DEGREE);
 }
 
 /****************** CUSTOM LOGGING PREFIX ******************************/

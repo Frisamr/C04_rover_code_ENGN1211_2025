@@ -2,7 +2,7 @@
 #ifndef TESTING_H
 #define TESTING_H
 
-enum struct RoverMovement;
+enum struct RoverMove;
 
 /****************** ASSESSMENT LEVELS ******************************/
 
@@ -11,16 +11,16 @@ void demoLevel_1_part2();
 
 /****************** OTHER TESTING ******************************/
 
-// routine for testing the reliability of collision avoidance
-void testCollisionAvoidance();
-
 // routine for testing the reliability of the sonar subsystem
 void testSonarReliability();
+
+// routine for testing the sonar sweep code
+void testSonarSweep();
 
 // routine for checking the angle of the servo
 void testServoAngle();
 
 // useful for testing movements in isolation
-void testMovement(RoverMovement move, unsigned long time);
+void testMovement(RoverMove move, unsigned long time);
 
 #endif // TESTING_H

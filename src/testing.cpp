@@ -43,94 +43,17 @@ void demoLevel_1_part2() {
     }
 
     for (int idx = 0; idx < 4; idx += 1) {
-        moveRover(RoverMovement::driveForward, 30 * globals::MICROS_PER_CM);
+        moveRover(RoverMove::driveForward, 30 * globals::MICROS_PER_cm);
         delay(50);
-        moveRover(RoverMovement::turnLeft, 90 * globals::MICROS_PER_DEGREE);
+        moveRover(RoverMove::turnLeft, 90 * globals::MICROS_PER_DEGREE);
         delay(50);
     }
 
-    // wait for 1 minute
-    delay(1UL * 60 * 1000);
+    // wait for 5 minutes
+    delay(5UL * 60 * 1000);
 }
 
 /****************** OTHER TESTING ******************************/
-
-// **COLLISION AVOIDANCE TEST**
-// NOTE: this is a Proof-of-Concept, not a full maze-solving algorithm.
-
-// variables for storing rover state
-RoverAction nextAction = RoverAction::sweepScan;
-bool stopped = false;
-SonarReading currentReading;
-
-// Proof-of-Concept collision avoiance.
-// This algorithm will not actually navigate the maze. It just stops the rover and blinks the built-in LED on the
-// Arduino if it detects walls closer than 3.5cm
-void testCollisionAvoidance() {
-    if (globals::RUN_START) {
-        Serial.println(F("[___TEST] Testing collision avoidance"));
-        pinMode(LED_BUILTIN, OUTPUT);
-
-        // pause for 1s, to allow for moving into position
-        // you can increase this delay if you need more time after pressing the reset button
-        delay(1000);
-
-        globals::RUN_START = false;
-    }
-
-    if (stopped) {
-        // blink the built-in LED
-        digitalWrite(LED_BUILTIN, HIGH);
-        delay(1000);
-        digitalWrite(LED_BUILTIN, LOW);
-        delay(1000);
-    } else {
-        switch (nextAction) {
-        // short step foward
-        case RoverAction::shortStepFoward: {
-            moveRover(RoverMovement::driveForward, globals::SHORT_STEP_TIME);
-            nextAction = RoverAction::sweepScan;
-            ALog.infoln(F("completed short step foward, switching to scan"));
-            break;
-        }
-
-        // long step foward
-        case RoverAction::longStepForward: {
-            moveRover(RoverMovement::driveForward, globals::LONG_STEP_TIME);
-            nextAction = RoverAction::sweepScan;
-            ALog.infoln(F("completed long step foward, switching to scan"));
-            break;
-        }
-
-        // perform a scan, and decide what to do next
-        case RoverAction::sweepScan: {
-            // perform a sweeping scan, measuring at 45 degree angles
-            // sonarSys.sonarSweep(&currentReading);
-            float currentDist = pollDistance();
-
-            // make the decision
-            if (currentDist < constants::STOP_THRESHOLD) {
-                ALog.infoln(F("walls too close, stopping"));
-                stopped = true;
-            } else if (currentDist < constants::SLOW_THRESHOLD) {
-                ALog.infoln(F("walls close, short stepping"));
-                nextAction = RoverAction::shortStepFoward;
-            } else {
-                ALog.infoln(F("no walls close, long stepping"));
-                nextAction = RoverAction::longStepForward;
-            }
-            break;
-        }
-
-        // BAD CODE: this should never happen, but handle it anyway
-        default: {
-            ALog.errorln(F("PoC collision avoidance reaching invalid state."));
-            nextAction = RoverAction::sweepScan;
-            break;
-        }
-        }
-    }
-}
 
 // **SERVO ANGLE TEST**
 
@@ -159,6 +82,31 @@ void testServoAngle() {
     //globals::THE_SERVO.writeMicroseconds(input_num);
     globals::THE_SERVO.write(input_num);
 }
+
+// **SONAR SWEEP TEST**
+
+void testSonarSweep() {
+    if (globals::RUN_START) {
+        Serial.println(F("[___TEST] Testing sonar sweep"));
+        globals::RUN_START = false;
+    }
+    Serial.println("");
+    Serial.println(F("[___TEST] Press <Enter> to start a new sweep."));
+    while (!Serial.available()) {
+    }
+    Serial.readBytesUntil('\n', serialClearBuf, CLEAR_BUF_SIZE);
+
+    // create a variable to store the readings in
+    SonarReadingSet readings;
+
+    // perform the sonar sweep
+    readings.doSonarSweep();
+
+    // print out the measure values
+    readings.printToSerialMonitor();
+    Serial.println("");
+}
+
 
 // **SONAR RELIABILITY TEST**
 
@@ -201,9 +149,9 @@ void testSonarReliability() {
 
 // Runs the two motors at the provided speeds for the provided time.
 // Used for testing deviation when driving in a straight line and pivoting.
-void testMovement(RoverMovement move, unsigned long time) {
+void testMovement(RoverMove move, unsigned long time) {
     if (globals::RUN_START) {
-        Serial.println("[___TEST] Testing constant motion");
+        Serial.println(F("[___TEST] Testing constant motion"));
         delay(2000);
     }
 

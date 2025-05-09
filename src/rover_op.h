@@ -7,7 +7,7 @@
 // components control functions
 #include "components.h"
 
-enum struct RoverMovement {
+enum struct RoverMove {
     turnLeft,
     turnRight,
     driveForward,
@@ -22,43 +22,47 @@ enum struct RoverAction {
     sweepScan,
 };
 
-#define NUM_DISTANCES 6
+#define NUM_READINGS 6
 
-// this struct contains the values for a full sonar sweep reading
-struct SonarReading {
-    float distances[NUM_DISTANCES];
+// this struct holds a set of readings for a full sonar sweep
+struct SonarReadingSet {
+public:
+    // holds the actual measure distances
+    float distanceReadings[NUM_READINGS];
 
-    float dist_left;
-    float dist_left_45;
-    float dist_front;
-    float dist_right_45;
-    float dist_right;
+    // used for tracking which readings failed and which succeeded
+    bool failedReadings[NUM_READINGS];
 
-    // helper function for setting values in this struct
-    void setDistAtAngle(float dist, int angle);
+    // Sweeps the servo and measures at various angles, setting the distance and failed values.
+    void doSonarSweep();
 
-    // print the value of this reading to the serial monitor
+    // prints out the values of the readings to the serial monitor
     void printToSerialMonitor();
 
-    // minimum distance out of all the 45 degree reading in a full reading
-    float minDist();
+    // static methods
+
+    // list of angles to take readings at
+    constexpr static int readingAngles[NUM_READINGS] = {0, 10, 45, 90, 135, 180};
+
+    // Get the angle associated with a particular distance reading index.
+    // Returns `-1` if the index is out of bounds
+    //static int idxToAngle(size_t idx);
+
+    // Get the index associated with a particular distance reading angle.
+    // Returns `0` if the angle is not found
+    static size_t angleToIdx(int angle);
 };
 
 /**
  * Perform a rover movement.
  *
- * \param move - The type of movement to perform
- * \param time - How long the rover will do the movement. Measured in microseconds.
- * \return void
+ * @param move The type of movement to perform.
+ * @param time How long the rover will do the movement. Measured in microseconds.
+ * @return void
  */
-void moveRover(RoverMovement move, unsigned long time);
-
-// Sweeps the servo and measures at 45 degree increments, writing the
-// results to the provided pointer.
-// Returns -1 if any of the measurements fail. Failed measurements are set to 0.0
-int sonarSweep(SonarReading* result);
+void moveRover(RoverMove move, unsigned long time);
 
 // Get the name of a movement as a string.
-const char* getMoveName(RoverMovement move);
+const char* getMoveName(RoverMove move);
 
 #endif // ROVER_OP_H

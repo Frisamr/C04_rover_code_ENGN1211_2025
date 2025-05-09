@@ -1,8 +1,5 @@
 // import Arduino libs
-#include "HardwareSerial.h"
 #include <Arduino.h>
-#include <WString.h>
-#include <avr/pgmspace.h>
 // import better int types, servo library
 #include <Servo.h>
 #include <inttypes.h>
@@ -25,14 +22,7 @@ using namespace globals;
 //   (multiply by 100 to convert m to cm, divide by (1000 * 1000) to convert s
 //   to us).
 // Multiply by 1/2 so we don't have to in the loop.
-constexpr float HALF_TIMES_VELOCITY = ((340.0 * 100.0) / (1000.0 * 1000.0)) * 0.5;
-
-// The nominal maximum operating distance the HC-SR04 is 400cm. The full length of the
-// maze is just under 80cm. So if we read a value of, say, 500cm or 900cm,
-// something has clearly gone wrong. This variable sets the threshold for
-// whether a distance is consider valid or not.
-constexpr float MAX_VALID_SONAR_DIST = 900.0;
-constexpr float MAX_VALID_SONAR_TIME = MAX_VALID_SONAR_DIST / HALF_TIMES_VELOCITY;
+constexpr float HALF_TIMES_SPEED = ((340.0 * 100.0) / (1000.0 * 1000.0)) * 0.5;
 
 /****************** SERVO AND SONAR FUNCTIONS ******************************/
 
@@ -40,7 +30,7 @@ float pollSonarModuleRaw() {
     ALog.traceln("`pollSonarModuleRaw()` called");
 
     // this prevents the previous pulse interfering with the next measurement
-    delay(POLLING_COOLDOWN_MS);
+    delay(POLL_COOLDOWN_ms);
 
     // send a 10us pulse to trigger the sonar module
     digitalWrite(constants::TRIGGER_PIN, HIGH);
@@ -52,7 +42,7 @@ float pollSonarModuleRaw() {
     ALog.verboseln("Measured duration (micros): %u", duration);
 
     // calculate the distance: (duration * velocity) / 2
-    float distance = static_cast<float>(duration) * HALF_TIMES_VELOCITY;
+    float distance = static_cast<float>(duration) * HALF_TIMES_SPEED;
     ALog.verboseln("Calculated distance (cm): %F", distance);
 
     return distance;
@@ -96,11 +86,12 @@ void setServoAngle(int angle) {
 
     globals::THE_SERVO.write(angle);
 
-    int angleDiff = abs(globals::SERVO_ANGLE - angle);
-    int rotationTime = (angleDiff * constants::SERVO_MICROS_PER_DEGREE);
+    int angleDiffRaw = globals::SERVO_ANGLE - angle;
+    unsigned int angleDiff = abs(angleDiffRaw);
+    unsigned long rotationTime = (static_cast<unsigned long>(angleDiff) * constants::SERVO_MICROS_PER_DEGREE);
 
-    ALog.verboseln("delay to allow for rotation: %d", rotationTime);
-    delay(rotationTime);
+    ALog.verboseln("delay to allow for rotation: %u", rotationTime);
+    delayMicroseconds(rotationTime);
 
     globals::SERVO_ANGLE = angle;
 }
@@ -119,7 +110,7 @@ void initSonarSystem() {
     digitalWrite(constants::TRIGGER_PIN, LOW); // start the trigger pin on low, ready to trigger the module
 
     // attach the servo to the servo pin
-    globals::THE_SERVO.attach(constants::SERVO_PIN, SERVO_MIN_US, SERVO_MAX_US);
+    globals::THE_SERVO.attach(constants::SERVO_PIN, SERVO_MIN_us, SERVO_MAX_us);
 
     // set a starting angle
     globals::THE_SERVO.writeMicroseconds(1500);

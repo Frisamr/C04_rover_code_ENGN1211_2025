@@ -1,6 +1,8 @@
+#include <stddef.h>
 // import standard arduino functions, better int types, servo library
 #include <Arduino.h>
 #include <Servo.h>
+#include <inttypes.h>
 
 // import logging library
 #include "ArduinoLog.h"
@@ -16,40 +18,16 @@ using namespace globals;
 // import the data type and function declarations
 #include "rover_op.h"
 
-/****************** FORWARD DECLARATIONS ******************************/
-void getMoveDirs(RoverMovement move, bool& leftReverse, bool& rightReverse);
-void getMoveSpeeds(RoverMovement move, int& leftMotorSpeed, int& rightMotorSpeed);
+constexpr int SonarReadingSet::readingAngles[NUM_READINGS];
 
-/****************** MAZE-SOLVING HELPER FUNCTIONS ******************************/
+/****************** DECLARATIONS ******************************/
+void getMoveDirs(RoverMove move, bool& leftReverse, bool& rightReverse);
+void getMoveSpeeds(RoverMove move, int& leftMotorSpeed, int& rightMotorSpeed);
 
-// Sweeps the servo and measures at 45 degree increments, writing the results to
-// the provided pointer. Returns -1 if any of the measurement fail. Failed
-// measurements are set to 0.0
-int sonarSweep(SonarReading* result) {
-    ALog.traceln("`SonarSystem::sonarSweep` called");
 
-    int startAngle = 0;
-    int increment = 45;
+/****************** MAZE-SOLVING FUNCTIONS ******************************/
 
-    if (globals::SERVO_ANGLE > 90) {
-        startAngle = 180;
-        increment = -45;
-    }
-
-    int errno = 0;
-    for (int angle = startAngle; (angle >= 0) && (angle <= 180); angle += increment) {
-        setServoAngle(angle);
-        float dist = pollDistance();
-        result->setDistAtAngle(dist, angle);
-        if (dist == 0.0) {
-            errno = -1;
-        }
-    }
-
-    return errno;
-}
-
-void moveRover(RoverMovement move, unsigned long time) {
+void moveRover(RoverMove move, unsigned long time) {
     ALog.traceln("`driveRover` called with move %s, and time %u", getMoveName(move), time);
 
     // variables for motor settings
@@ -72,132 +50,127 @@ void moveRover(RoverMovement move, unsigned long time) {
     setMotorSpeed(constants::RIGHT_MOTOR, 0, false);
 }
 
+
+
+void SonarReadingSet::doSonarSweep() {
+    ALog.traceln("`SonarReadingSet::doSonarSweep` called");
+
+    for (size_t idx = 0; idx < NUM_READINGS; idx += 1) {
+        int angle = SonarReadingSet::readingAngles[idx];
+        setServoAngle(angle);
+
+        float dist = pollDistance();
+        this->distanceReadings[idx] = dist;
+        if (dist == 0.0) {
+            this->failedReadings[idx] = true;
+        } else {
+            this->failedReadings[idx] = false;
+        }
+    }
+}
+
 /****************** HELPER FUNCTIONS ******************************/
 
-void SonarReading::setDistAtAngle(float dist, int angle) {
-    ALog.verboseln("`SonarSystem::setDistAtAngle` called with dist %F and angle %d", dist, angle);
+void SonarReadingSet::printToSerialMonitor() {
+    Serial.print("SonarReadingSet { ");
+    for (size_t idx = 0; idx < NUM_READINGS; idx += 1) {
 
-    switch (angle) {
-    case 0:
-        this->dist_left = dist;
-        break;
-    case 45:
-        this->dist_left_45 = dist;
-        break;
-    case 90:
-        this->dist_front = dist;
-        break;
-    case 135:
-        this->dist_right_45 = dist;
-        break;
-    case 180:
-        this->dist_right = dist;
-        break;
-    default:
-        ALog.error("`SonarReading::setDistAtAngle` called with invalid angle %d", angle);
+        int angle = SonarReadingSet::readingAngles[idx];
+        Serial.print(angle);
+
+
+        float dist = this->distanceReadings[idx];
+        Serial.print(": ");
+        Serial.print(dist);
+        Serial.print(", ");
+    }
+    Serial.print(" }");
+}
+
+/* int SonarReadingSet::idxToAngle(size_t idx) {
+    ALog.verboseln("`SonarReadingSet::idxToAngle` called with idx %X", idx);
+    if (idx >= NUM_READINGS) {
+        return -1;
+    }
+    return SonarReadingSet::readingAngles[idx];
+} */
+size_t SonarReadingSet::angleToIdx(int angle) {
+    ALog.verbose("`SonarReadingSet::angleToIdx` called with angle %d  ", angle);
+
+    for (size_t idx = 0; idx < NUM_READINGS; idx += 1) {
+        if (angle == SonarReadingSet::readingAngles[idx]) {
+            ALog.verboseln("got idx %X", idx);
+            return idx;
+        }
+    }
+    ALog.verboseln("could not find angle, returning 0");
+    return 0;
+}
+
+void getMoveDirs(RoverMove move, bool& leftReverse, bool& rightReverse) {
+    // choose motor directions
+    switch (move) {
+    case RoverMove::turnLeft: {
+        leftReverse = true;
+        rightReverse = false;
+        return;
+    }
+    case RoverMove::turnRight: {
+        leftReverse = false;
+        rightReverse = true;
+        return;
+    }
+    case RoverMove::driveForward: {
+        leftReverse = false;
+        rightReverse = false;
+        return;
+    }
+    case RoverMove::driveBack: {
+        leftReverse = true;
+        rightReverse = true;
+        return;
+    }
+    }
+}
+void getMoveSpeeds(RoverMove move, int& leftMotorSpeed, int& rightMotorSpeed) {
+    // choose motor speed
+    if (move == RoverMove::turnLeft || move == RoverMove::turnRight) {
+        leftMotorSpeed = globals::MOTOR_CONFIG.leftMotorTurn;
+        rightMotorSpeed = globals::MOTOR_CONFIG.rightMotorTurn;
+        return;
+    }
+    if (move == RoverMove::driveForward || move == RoverMove::driveBack) {
+        leftMotorSpeed = globals::MOTOR_CONFIG.leftMotorDrive;
+        rightMotorSpeed = globals::MOTOR_CONFIG.rightMotorDrive;
+        return;
     }
 }
 
-void SonarReading::printToSerialMonitor() {
-    Serial.print("Sonar reading: { left = ");
-    Serial.print(this->dist_left, 4);
-    Serial.print(", left45 = ");
-    Serial.print(this->dist_left_45, 4);
-    Serial.print(", front = ");
-    Serial.print(this->dist_front, 4);
-    Serial.print(", right45 = ");
-    Serial.print(this->dist_right_45, 4);
-    Serial.print(", right = ");
-    Serial.print(this->dist_right, 4);
-    Serial.println(" }");
-}
-
-float SonarReading::minDist() {
-    ALog.traceln("`SonarReading::minDist` called");
-
-    // any real reading is guaranteed to be less than this
-    float minimumDist = this->dist_left;
-
-    if ((this->dist_left_45) < minimumDist) {
-        minimumDist = this->dist_left_45;
-    }
-    if ((this->dist_front) < minimumDist) {
-        minimumDist = this->dist_front;
-    }
-    if ((this->dist_right_45) < minimumDist) {
-        minimumDist = this->dist_right_45;
-    }
-    if ((this->dist_right) < minimumDist) {
-        minimumDist = this->dist_right;
-    }
-
-    return minimumDist;
-}
-
-namespace moveNames {
+namespace rover_move_names {
     const char* turnLeftStr = "turnLeft";
     const char* turnRightStr = "turnRight";
     const char* driveForwardStr = "driveForward";
     const char* driveBackStr = "driveBack";
-} //namespace moveNames
+} //namespace rover_move_names
 
 // Get the name of a movement as a C-style string.
-const char* getMoveName(RoverMovement move) {
+const char* getMoveName(RoverMove move) {
     switch (move) {
-    case RoverMovement::turnLeft: {
-        return moveNames::turnLeftStr;
+    case RoverMove::turnLeft: {
+        return rover_move_names::turnLeftStr;
     }
-    case RoverMovement::turnRight: {
-        return moveNames::turnRightStr;
+    case RoverMove::turnRight: {
+        return rover_move_names::turnRightStr;
     }
-    case RoverMovement::driveForward: {
-        return moveNames::driveForwardStr;
+    case RoverMove::driveForward: {
+        return rover_move_names::driveForwardStr;
     }
-    case RoverMovement::driveBack: {
-        return moveNames::driveBackStr;
+    case RoverMove::driveBack: {
+        return rover_move_names::driveBackStr;
     }
     default: {
         // All cases are covered, so this should be impossible.
         return nullptr;
     }
-    }
-}
-
-void getMoveDirs(RoverMovement move, bool& leftReverse, bool& rightReverse) {
-    // choose motor directions
-    switch (move) {
-    case RoverMovement::turnLeft: {
-        leftReverse = true;
-        rightReverse = false;
-        return;
-    }
-    case RoverMovement::turnRight: {
-        leftReverse = false;
-        rightReverse = true;
-        return;
-    }
-    case RoverMovement::driveForward: {
-        leftReverse = false;
-        rightReverse = false;
-        return;
-    }
-    case RoverMovement::driveBack: {
-        leftReverse = true;
-        rightReverse = true;
-        return;
-    }
-    }
-}
-void getMoveSpeeds(RoverMovement move, int& leftMotorSpeed, int& rightMotorSpeed) {
-    // choose motor speed
-    if (move == RoverMovement::turnLeft || move == RoverMovement::turnRight) {
-        leftMotorSpeed = globals::MOTOR_CONFIG.leftMotorTurn;
-        rightMotorSpeed = globals::MOTOR_CONFIG.rightMotorTurn;
-        return;
-    }
-    if (move == RoverMovement::driveForward || move == RoverMovement::driveBack) {
-        leftMotorSpeed = globals::MOTOR_CONFIG.leftMotorDrive;
-        rightMotorSpeed = globals::MOTOR_CONFIG.rightMotorDrive;
-        return;
     }
 }
