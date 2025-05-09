@@ -80,7 +80,6 @@ void setup() {
 void loop() {
     /* test level demos */
 
-    //demoLevel_1_part1();
     //demoLevel_1_part2();
 
     /* testing routines */

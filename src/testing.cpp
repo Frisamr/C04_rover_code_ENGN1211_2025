@@ -36,20 +36,6 @@ char serialClearBuf[CLEAR_BUF_SIZE];
 
 // **LEVEL 1**
 
-void demoLevel_1_part1() {
-    if (globals::RUN_START) {
-        ALog.infoln(F("Level 1, part 1"));
-        delay(2000);
-    }
-
-    moveRover(RoverMovement::driveForward, 3000); // drive forward in a straight line
-    delay(3000);                                  // stop for 3 seconds
-    moveRover(RoverMovement::driveBack, 3000);    // reverse back to starting position
-
-    // wait for 1 minute
-    delay(1UL * 60 * 1000);
-}
-
 void demoLevel_1_part2() {
     if (globals::RUN_START) {
         ALog.infoln(F("Level 1, part 2"));

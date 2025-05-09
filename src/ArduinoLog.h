@@ -1,3 +1,4 @@
+// clang-format off
 /*
     _   ___ ___  _   _ ___ _  _  ___  _    ___   ___
    /_\ | _ \   \| | | |_ _| \| |/ _ \| |  / _ \ / __|
@@ -468,3 +469,4 @@ private:
 extern Logging ALog;
 #endif
 #endif
+// clang-format on

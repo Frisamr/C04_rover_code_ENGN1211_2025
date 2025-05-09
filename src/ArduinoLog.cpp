@@ -1,3 +1,4 @@
+// clang-format off
 /*
     _   ___ ___  _   _ ___ _  _  ___  _    ___   ___ 
    /_\ | _ \   \| | | |_ _| \| |/ _ \| |  / _ \ / __|
@@ -292,3 +293,4 @@ template<typename... Args> void Logging::writeLog(Args... args) {
 #ifndef __DO_NOT_INSTANTIATE__
 Logging ALog = Logging();
 #endif
+// clang-format on
