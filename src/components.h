@@ -1,7 +1,6 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 
-#include <Servo.h>
 #include <inttypes.h>
 
 // Pins for controlling a single motor.
@@ -34,11 +33,11 @@ void initMotor(const MotorPins &targetMotor);
  * Set the speed of a motor. The motor must be initialised first.
  *
  * \param targetMotor - which motor will have its speed set
- * \param speed - the speed to run the target motor at. If `speed` is negative,
- * the motor will run backwards. If `speed` is `0`, the motor will brake.
+ * \param speed - The speed to run the target motor at. Must be between 255 and 0. If `0`, the motor will brake.
+ * \param reverse - Whether the motor should be run in reverse.
  * \return void
  */
-void setMotorSpeed(const MotorPins &targetMotor, int speed);
+void setMotorSpeed(const MotorPins &targetMotor, int speed, bool reverse);
 
 // initialise the sonar module and servo
 void initSonarSystem();

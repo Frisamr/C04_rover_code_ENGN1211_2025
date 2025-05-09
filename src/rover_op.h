@@ -2,13 +2,17 @@
 #ifndef ROVER_OP_H
 #define ROVER_OP_H
 
-#include <Servo.h>
-#include <inttypes.h>
-
 /****************** OTHER ******************************/
 
 // components control functions
 #include "components.h"
+
+enum struct RoverMovement {
+    turnLeft,
+    turnRight,
+    driveForward,
+    driveBack,
+};
 
 enum struct RoverAction {
     turnLeft,
@@ -47,12 +51,14 @@ struct SonarReading {
  * \param time - How long the rover will do the movement. Measured in microseconds.
  * \return void
  */
-void driveRover(int leftMotorSpeed, int rightMotorSpeed, unsigned long time);
+void moveRover(RoverMovement move, unsigned long time);
 
 // Sweeps the servo and measures at 45 degree increments, writing the
 // results to the provided pointer.
 // Returns -1 if any of the measurements fail. Failed measurements are set to 0.0
-int8_t sonarSweep(SonarReading *result);
+int sonarSweep(SonarReading* result);
 
+// Get the name of a movement as a string.
+const char* getMoveName(RoverMovement move);
 
 #endif // ROVER_OP_H

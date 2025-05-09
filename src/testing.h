@@ -2,6 +2,8 @@
 #ifndef TESTING_H
 #define TESTING_H
 
+enum struct RoverMovement;
+
 /****************** ASSESSMENT LEVELS ******************************/
 
 void demoLevel_1_part1();
@@ -18,6 +20,7 @@ void testSonarReliability();
 // routine for checking the angle of the servo
 void testServoAngle();
 
-void testConstantMotion(int motor1Speed, int motor2Speed, unsigned long time);
+// useful for testing movements in isolation
+void testMovement(RoverMovement move, unsigned long time);
 
 #endif // TESTING_H

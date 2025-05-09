@@ -1,7 +1,6 @@
 // import standard arduino functions, better int types, servo library
 #include <Arduino.h>
 #include <Servo.h>
-#include <inttypes.h>
 
 // import logging library
 #include "ArduinoLog.h"
@@ -17,12 +16,16 @@ using namespace globals;
 // import the data type and function declarations
 #include "rover_op.h"
 
+/****************** FORWARD DECLARATIONS ******************************/
+void getMoveDirs(RoverMovement move, bool& leftReverse, bool& rightReverse);
+void getMoveSpeeds(RoverMovement move, int& leftMotorSpeed, int& rightMotorSpeed);
+
 /****************** MAZE-SOLVING HELPER FUNCTIONS ******************************/
 
 // Sweeps the servo and measures at 45 degree increments, writing the results to
 // the provided pointer. Returns -1 if any of the measurement fail. Failed
 // measurements are set to 0.0
-int8_t sonarSweep(SonarReading *result_ptr) {
+int sonarSweep(SonarReading* result) {
     ALog.traceln("`SonarSystem::sonarSweep` called");
 
     int startAngle = 0;
@@ -33,11 +36,11 @@ int8_t sonarSweep(SonarReading *result_ptr) {
         increment = -45;
     }
 
-    int8_t errno = 0;
+    int errno = 0;
     for (int angle = startAngle; (angle >= 0) && (angle <= 180); angle += increment) {
         setServoAngle(angle);
         float dist = pollDistance();
-        result_ptr->setDistAtAngle(dist, angle);
+        result->setDistAtAngle(dist, angle);
         if (dist == 0.0) {
             errno = -1;
         }
@@ -46,25 +49,30 @@ int8_t sonarSweep(SonarReading *result_ptr) {
     return errno;
 }
 
-void driveRover(int leftMotorSpeed, int rightMotorSpeed, unsigned long time) {
-    ALog.traceln(
-        "`driveRover` called with leftMotorSpeed %d, rightMotorSpeed %d, and time %u", leftMotorSpeed, rightMotorSpeed,
-        time
-    );
+void moveRover(RoverMovement move, unsigned long time) {
+    ALog.traceln("`driveRover` called with move %s, and time %u", getMoveName(move), time);
 
-    // spin both motors forwards
-    setMotorSpeed(constants::LEFT_MOTOR, leftMotorSpeed);
-    setMotorSpeed(constants::RIGHT_MOTOR, rightMotorSpeed);
+    // variables for motor settings
+    bool leftReverse;
+    bool rightReverse;
+    getMoveDirs(move, leftReverse, rightReverse);
+    int leftMotorSpeed;
+    int rightMotorSpeed;
+    getMoveSpeeds(move, leftMotorSpeed, rightMotorSpeed);
 
-    // drive forward for provided time
-    delay(time);
+    // Spin both motors
+    setMotorSpeed(constants::LEFT_MOTOR, leftMotorSpeed, leftReverse);
+    setMotorSpeed(constants::RIGHT_MOTOR, rightMotorSpeed, rightReverse);
 
-    // stop
-    setMotorSpeed(constants::LEFT_MOTOR, 0);
-    setMotorSpeed(constants::RIGHT_MOTOR, 0);
+    // Drive forward for provided time
+    delayMicroseconds(time);
+
+    // Stop the motors. The motors brake at 0 speed, so reverse doesn't matter
+    setMotorSpeed(constants::LEFT_MOTOR, 0, false);
+    setMotorSpeed(constants::RIGHT_MOTOR, 0, false);
 }
 
-/****************** SONAR READING HELPER FUNCTIONS ******************************/
+/****************** HELPER FUNCTIONS ******************************/
 
 void SonarReading::setDistAtAngle(float dist, int angle) {
     ALog.verboseln("`SonarSystem::setDistAtAngle` called with dist %F and angle %d", dist, angle);
@@ -126,3 +134,70 @@ float SonarReading::minDist() {
     return minimumDist;
 }
 
+namespace moveNames {
+    const char* turnLeftStr = "turnLeft";
+    const char* turnRightStr = "turnRight";
+    const char* driveForwardStr = "driveForward";
+    const char* driveBackStr = "driveBack";
+} //namespace moveNames
+
+// Get the name of a movement as a C-style string.
+const char* getMoveName(RoverMovement move) {
+    switch (move) {
+    case RoverMovement::turnLeft: {
+        return moveNames::turnLeftStr;
+    }
+    case RoverMovement::turnRight: {
+        return moveNames::turnRightStr;
+    }
+    case RoverMovement::driveForward: {
+        return moveNames::driveForwardStr;
+    }
+    case RoverMovement::driveBack: {
+        return moveNames::driveBackStr;
+    }
+    default: {
+        // All cases are covered, so this should be impossible.
+        return nullptr;
+    }
+    }
+}
+
+void getMoveDirs(RoverMovement move, bool& leftReverse, bool& rightReverse) {
+    // choose motor directions
+    switch (move) {
+    case RoverMovement::turnLeft: {
+        leftReverse = true;
+        rightReverse = false;
+        return;
+    }
+    case RoverMovement::turnRight: {
+        leftReverse = false;
+        rightReverse = true;
+        return;
+    }
+    case RoverMovement::driveForward: {
+        leftReverse = false;
+        rightReverse = false;
+        return;
+    }
+    case RoverMovement::driveBack: {
+        leftReverse = true;
+        rightReverse = true;
+        return;
+    }
+    }
+}
+void getMoveSpeeds(RoverMovement move, int& leftMotorSpeed, int& rightMotorSpeed) {
+    // choose motor speed
+    if (move == RoverMovement::turnLeft || move == RoverMovement::turnRight) {
+        leftMotorSpeed = globals::MOTOR_CONFIG.leftMotorTurn;
+        rightMotorSpeed = globals::MOTOR_CONFIG.rightMotorTurn;
+        return;
+    }
+    if (move == RoverMovement::driveForward || move == RoverMovement::driveBack) {
+        leftMotorSpeed = globals::MOTOR_CONFIG.leftMotorDrive;
+        rightMotorSpeed = globals::MOTOR_CONFIG.rightMotorDrive;
+        return;
+    }
+}

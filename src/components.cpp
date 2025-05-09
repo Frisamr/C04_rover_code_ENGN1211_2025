@@ -20,11 +20,6 @@ using namespace globals;
 
 /****************** STATIC CONFIG VALUES ******************************/
 
-// there is a short delay (70ms) at the end of the polling function
-// this prevents the sonar module from being polled too quickly and the previous
-// pulse interfering with the next measurement
-constexpr int POLLING_COOLDOWN_MS = 70;
-
 // The speed of sound in air is 340m/s.
 // We need to convert to centimetres/microsecond
 //   (multiply by 100 to convert m to cm, divide by (1000 * 1000) to convert s
@@ -91,9 +86,7 @@ float pollDistance() {
         finalDist = finalDist / static_cast<float>(good_readings);
     }
 
-    ALog.traceln(
-        "%d readings taken, %d were good readings. Final reading is %F", poll_num, good_readings, finalDist
-    );
+    ALog.traceln("%d readings taken, %d were good readings. Final reading is %F", poll_num, good_readings, finalDist);
 
     return finalDist;
 }
@@ -104,7 +97,7 @@ void setServoAngle(int angle) {
     globals::THE_SERVO.write(angle);
 
     int angleDiff = abs(globals::SERVO_ANGLE - angle);
-    int rotationTime = (angleDiff * globals::MILLIS_PER_DEGREE) + 50; // add an extra 30ms for safety
+    int rotationTime = (angleDiff * constants::SERVO_MICROS_PER_DEGREE);
 
     ALog.verboseln("delay to allow for rotation: %d", rotationTime);
     delay(rotationTime);
@@ -125,7 +118,8 @@ void initSonarSystem() {
     pinMode(constants::TRIGGER_PIN, OUTPUT);
     digitalWrite(constants::TRIGGER_PIN, LOW); // start the trigger pin on low, ready to trigger the module
 
-    globals::THE_SERVO.attach(constants::SERVO_PIN, 1000, 2000); // attach the servo to the servo pin
+    // attach the servo to the servo pin
+    globals::THE_SERVO.attach(constants::SERVO_PIN, SERVO_MIN_US, SERVO_MAX_US);
 
     // set a starting angle
     globals::THE_SERVO.writeMicroseconds(1500);
@@ -134,32 +128,24 @@ void initSonarSystem() {
 
 /****************** MOTOR CONTROL FUNCTIONS ******************************/
 
-void setMotorSpeed(const MotorPins &targetMotor, int speed) {
-    if (speed >= 0) {
+void setMotorSpeed(const MotorPins& targetMotor, int speed, bool reverse) {
+    if (!reverse) {
         // spin motor forwards
         // `pin1` HIGH and `pin2` LOW, as per MotorPins struct spec
         digitalWrite(targetMotor.pin2, LOW);
         digitalWrite(targetMotor.pin1, HIGH);
-
-        // write PWM wave to enable pin to control motor speed
-        // if `speed` is 0, then the enable pin duty cycle is zero and the other
-        // pins don't matter
-        analogWrite(targetMotor.enablePin, speed);
-    } else if (speed < 0) {
+    } else {
         // spin motor backwards
         // `pin1` and `pin2` are swapped compared to forwards case
         // so voltage applied to motor is reversed
         digitalWrite(targetMotor.pin1, LOW);
         digitalWrite(targetMotor.pin2, HIGH);
-
-        // analogWrite only takes values between `0` and `255`
-        // `speed` is negative, so we have to negate it to make it a positive
-        // value
-        analogWrite(targetMotor.enablePin, -speed);
     }
+    // write PWM wave to enable pin to control motor speed
+    analogWrite(targetMotor.enablePin, speed);
 }
 
-void initMotor(const MotorPins &targetMotor) {
+void initMotor(const MotorPins& targetMotor) {
     // set the pins for controlling this motor to output mode
     pinMode(targetMotor.pin1, OUTPUT);
     pinMode(targetMotor.pin2, OUTPUT);

@@ -39,12 +39,12 @@ char serialClearBuf[CLEAR_BUF_SIZE];
 void demoLevel_1_part1() {
     if (globals::RUN_START) {
         ALog.infoln(F("Level 1, part 1"));
-        delay(3000);
+        delay(2000);
     }
 
-    driveRover(255, 255, 3000);   // drive forward in a straight line,
-    delay(3000);                  // stop for 3 seconds
-    driveRover(-255, -255, 3000); // reverse back to starting position
+    moveRover(RoverMovement::driveForward, 3000); // drive forward in a straight line
+    delay(3000);                                  // stop for 3 seconds
+    moveRover(RoverMovement::driveBack, 3000);    // reverse back to starting position
 
     // wait for 1 minute
     delay(1UL * 60 * 1000);
@@ -53,13 +53,13 @@ void demoLevel_1_part1() {
 void demoLevel_1_part2() {
     if (globals::RUN_START) {
         ALog.infoln(F("Level 1, part 2"));
-        delay(300);
+        delay(2000);
     }
 
     for (int idx = 0; idx < 4; idx += 1) {
-        driveRover(255, 247, 30 * globals::MILLIS_PER_CM);
+        moveRover(RoverMovement::driveForward, 30 * globals::MICROS_PER_CM);
         delay(50);
-        driveRover(-255, 255, 90 * globals::MILLIS_PER_DEGREE);
+        moveRover(RoverMovement::turnLeft, 90 * globals::MICROS_PER_DEGREE);
         delay(50);
     }
 
@@ -102,7 +102,7 @@ void testCollisionAvoidance() {
         switch (nextAction) {
         // short step foward
         case RoverAction::shortStepFoward: {
-            driveRover(255, 255, globals::SHORT_STEP_TIME);
+            moveRover(RoverMovement::driveForward, globals::SHORT_STEP_TIME);
             nextAction = RoverAction::sweepScan;
             ALog.infoln(F("completed short step foward, switching to scan"));
             break;
@@ -110,7 +110,7 @@ void testCollisionAvoidance() {
 
         // long step foward
         case RoverAction::longStepForward: {
-            driveRover(255, 255, globals::LONG_STEP_TIME);
+            moveRover(RoverMovement::driveForward, globals::LONG_STEP_TIME);
             nextAction = RoverAction::sweepScan;
             ALog.infoln(F("completed long step foward, switching to scan"));
             break;
@@ -215,17 +215,14 @@ void testSonarReliability() {
 
 // Runs the two motors at the provided speeds for the provided time.
 // Used for testing deviation when driving in a straight line and pivoting.
-void testConstantMotion(int motor1Speed, int motor2Speed, unsigned long time) {
+void testMovement(RoverMovement move, unsigned long time) {
     if (globals::RUN_START) {
         Serial.println("[___TEST] Testing constant motion");
+        delay(2000);
     }
 
-    // pause for 1s, to allow for moving into position
-    // you can increase this delay if you need more time after pressing the reset button
-    delay(1000);
-
     // drive the rover forward with the provided values
-    driveRover(motor1Speed, motor2Speed, time);
+    moveRover(move, time);
 
     // wait for 10 minutes
     delay(10UL * 60 * 1000);

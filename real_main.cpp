@@ -25,16 +25,23 @@ using namespace globals;
 // these are global variables declared in `global.h`
 
 // approximately correct
-unsigned long globals::MILLIS_PER_CM = 182;
+unsigned long globals::MICROS_PER_CM = 182000;
 
 // approximately correct
-unsigned long globals::MILLIS_PER_DEGREE = 19;
+unsigned long globals::MICROS_PER_DEGREE = 19000;
+
+MotorSettings globals::MOTOR_CONFIG = {
+    255, //leftMotorDrive;
+    255, //rightMotorDrive;
+    255, //leftMotorTurn;
+    255, //rightMotorTurn;
+};
 
 // set so the rover will drive approx 0.5cm
-unsigned long globals::SHORT_STEP_TIME = globals::MILLIS_PER_CM / 2;
+unsigned long globals::SHORT_STEP_TIME = globals::MICROS_PER_CM / 2;
 
 // set so the rover will drive 3cm
-unsigned long globals::LONG_STEP_TIME = globals::MILLIS_PER_CM * 3;
+unsigned long globals::LONG_STEP_TIME = globals::MICROS_PER_CM * 3;
 
 /****************** OTHER GLOBALS ******************************/
 // These will be overwritten as the program runs. Don't change them.
@@ -51,7 +58,7 @@ int globals::SERVO_ANGLE = 90;
 
 // forward declare this function so we can use it in setup()
 // full function definition at the end of this file
-void printPrefix(Print *_logOutput, int logLevel);
+void printPrefix(Print* _logOutput, int logLevel);
 
 void setup() {
     // open the serial port
@@ -73,20 +80,21 @@ void setup() {
 void loop() {
     /* test level demos */
 
-    //demoLevel_1_part2();
     //demoLevel_1_part1();
+    //demoLevel_1_part2();
 
     /* testing routines */
 
-    testServoAngle();
+    //testServoAngle();
     //testCollisionAvoidance();
     //testSonarReliability();
-    //testConstantMotion(255, 255, 10 * globals::MILLIS_PER_CM);
+    //testMovement(RoverMovement::driveForward, 10 * globals::MICROS_PER_CM);
+    testMovement(RoverMovement::turnLeft, 90 * globals::MICROS_PER_DEGREE);
 }
 
 /****************** CUSTOM LOGGING PREFIX ******************************/
 
-void printPrefix(Print *_logOutput, int logLevel) {
+void printPrefix(Print* _logOutput, int logLevel) {
     // Show log description based on log level
     switch (logLevel) {
     default:

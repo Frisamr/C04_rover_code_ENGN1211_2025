@@ -1,16 +1,22 @@
 ---
 # We'll use defaults from the LLVM style, but with a few tweaks
 BasedOnStyle: LLVM
+
 # 4-space indenting
 IndentWidth: 4
+AlignAfterOpenBracket: BlockIndent
+# Don't indent access modifiers
 AccessModifierOffset: -4
 
+# Max colum width
 ColumnLimit: 120
 
-# indent members in namespaces
-NamespaceIndentation: All
+# Force pointers to be attached to the type.
+DerivePointerAlignment: false
+PointerAlignment: Left
 
-AlignAfterOpenBracket: BlockIndent
+# Indent members in namespaces
+NamespaceIndentation: All
 
 SpacesInLineCommentPrefix:
   Minimum: 0

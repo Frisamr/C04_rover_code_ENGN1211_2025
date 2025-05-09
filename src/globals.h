@@ -43,6 +43,11 @@ namespace constants {
     // Microseconds pulse width corresponding to the max (180 degrees) angle of the servo.
     constexpr int SERVO_MAX_US = 2530;
 
+    // After setting the servo angle, we need to wait a bit for it to finishing turning.
+    // According to the datasheet, the servo rotates at 500 degrees per second at 6V. This equates to 2ms per degree.
+    // However, we are running it at 5V, so add a bit of extra time to compensate.
+    constexpr unsigned long SERVO_MICROS_PER_DEGREE = 2800; // 2.8ms
+
     /****************** ARDUINO PINS ******************************/
 
     // definition of motor 1 pins
@@ -71,7 +76,7 @@ namespace constants {
 
 /****************** NON-CONSTANT GLOBAL VARS ******************************/
 
-// Because these vars are non-constant, they cannot be initialised in this header file.
+// Because these variables are non-constant, they cannot be initialised in this header file.
 // They must be initialised in the main file.
 namespace globals {
     // global servo object
@@ -83,10 +88,10 @@ namespace globals {
     extern MotorSettings MOTOR_CONFIG;
 
     // how long (in ms) it takes the rover to drive 1cm forward at full speed
-    extern unsigned long MILLIS_PER_CM;
+    extern unsigned long MICROS_PER_CM;
 
     // how long (in ms) it takes the rover to rotate 1 degree at full speed
-    extern unsigned long MILLIS_PER_DEGREE;
+    extern unsigned long MICROS_PER_DEGREE;
 
     // how long the rover will drive for when doing a short step
     // set so the rover will drive approx. 0.5cm
