@@ -24,6 +24,15 @@ using namespace globals;
 // Multiply by 1/2 so we don't have to in the loop.
 constexpr float HALF_TIMES_SPEED = ((340.0 * 100.0) / (1000.0 * 1000.0)) * 0.5;
 
+/****************** RANDOM UTILS ******************************/
+
+void delayMicrosLong(unsigned long us) {
+    unsigned long ms = us / 1000;
+    unsigned int remaining_us = static_cast<unsigned int>(us % 1000);
+    delay(ms);
+    delayMicroseconds(remaining_us);
+}
+
 /****************** SERVO AND SONAR FUNCTIONS ******************************/
 
 float pollSonarModuleRaw() {
@@ -88,19 +97,16 @@ void setServoAngle(int angle) {
 
     int angleDiffRaw = globals::SERVO_ANGLE - angle;
     unsigned int angleDiff = abs(angleDiffRaw);
-    unsigned long rotationTime = (static_cast<unsigned long>(angleDiff) * constants::SERVO_MICROS_PER_DEGREE);
+    unsigned long rotationTime = (static_cast<unsigned long>(angleDiff) * constants::SERVO_MICROS_PER_degree);
 
     ALog.verboseln("delay to allow for rotation: %u", rotationTime);
-    delayMicroseconds(rotationTime);
+    delayMicrosLong(rotationTime);
 
     globals::SERVO_ANGLE = angle;
 }
 
-void initSonarSystem() {
-    ALog.traceln("`initSonarSystem()` called");
-
-    // the servo is controlled by the ouput of this pin
-    pinMode(constants::SERVO_PIN, OUTPUT);
+void initSonarMod() {
+    ALog.verboseln("`initSonarMod()` called");
 
     // input from this pin is used to measure and calculate distances
     pinMode(constants::ECHO_PIN, INPUT);
@@ -108,18 +114,26 @@ void initSonarSystem() {
     // the sonar module is triggered by the output of this pin
     pinMode(constants::TRIGGER_PIN, OUTPUT);
     digitalWrite(constants::TRIGGER_PIN, LOW); // start the trigger pin on low, ready to trigger the module
+}
+
+void initServo() {
+    ALog.traceln("`initServo()` called");
+
+    // the servo is controlled by the ouput of this pin
+    pinMode(constants::SERVO_PIN, OUTPUT);
 
     // attach the servo to the servo pin
     globals::THE_SERVO.attach(constants::SERVO_PIN, SERVO_MIN_us, SERVO_MAX_us);
 
     // set a starting angle
-    globals::THE_SERVO.writeMicroseconds(1500);
-    globals::SERVO_ANGLE = 90;
+    setServoAngle(90);
 }
 
 /****************** MOTOR CONTROL FUNCTIONS ******************************/
 
 void setMotorSpeed(const MotorPins& targetMotor, int speed, bool reverse) {
+    ALog.verboseln("`setMotorSpeed()` called with speed %d and reverse %T", speed, reverse);
+
     if (!reverse) {
         // spin motor forwards
         // `pin1` HIGH and `pin2` LOW, as per MotorPins struct spec

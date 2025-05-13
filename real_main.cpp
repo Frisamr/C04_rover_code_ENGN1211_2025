@@ -28,7 +28,7 @@ using namespace globals;
 unsigned long globals::MICROS_PER_cm = 182000;
 
 // approximately correct
-unsigned long globals::MICROS_PER_DEGREE = 19000;
+unsigned long globals::MICROS_PER_degree = 19000;
 
 MotorSettings globals::MOTOR_CONFIG = {
     255, //leftMotorDrive;
@@ -65,18 +65,19 @@ void setup() {
     Serial.begin(9600);
 
     // setup logging
-    ALog.setPrefix(printPrefix);                       // set custom prefix that shows log level
-    ALog.begin(LOG_LEVEL_INFO, &Serial, false, false); // logging settings: level, output, show level, show colour
+    ALog.setPrefix(printPrefix);                          // set custom prefix that shows log level
+    ALog.begin(LOG_LEVEL_VERBOSE, &Serial, false, false); // logging settings: level, output, show level, show colour
 
-    // initialise the motors and sonar module (set the control pins to output mode)
+    // initialise the motors, sonar module, and servo (set the pins to the correct modes)
     initMotor(constants::LEFT_MOTOR);
     initMotor(constants::RIGHT_MOTOR);
-    initSonarSystem();
+    initSonarMod();
+    initServo();
 }
 
 /****************** MAIN LOOP ******************************/
 
-// Comment out the routines you don't want to use in the loop function.
+// Comment out the routines you don't want to use in the `loop()` function.
 void loop() {
     /* test level demos */
 
@@ -85,10 +86,10 @@ void loop() {
     /* testing routines */
 
     //testSonarReliability();
-    testSonarSweep();
+    //testSonarSweep();
     //testServoAngle();
-    //testMovement(RoverMove::driveForward, 10 * globals::MICROS_PER_cm);
-    //testMovement(RoverMove::turnLeft, 90 * globals::MICROS_PER_DEGREE);
+    testMovement(RvrMoveKind::driveFwd, 10 * globals::MICROS_PER_cm);
+    //testMovement(RvrMoveKind::turnLeft, 90 * globals::MICROS_PER_degree);
 }
 
 /****************** CUSTOM LOGGING PREFIX ******************************/

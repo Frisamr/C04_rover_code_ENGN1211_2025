@@ -387,7 +387,7 @@ private:
         }
 
 #ifdef ESP32
-        if (xSemaphoreTake(_semaphore, (TickType_t) 10 )) {
+        if (xSemaphoreTake(_semaphore, (TickKind_t) 10 )) {
 #endif
             if (_showColors) {
                 switch (level) {
