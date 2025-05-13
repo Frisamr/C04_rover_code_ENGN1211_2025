@@ -26,7 +26,19 @@ constexpr int SonarReadingSet::readingAngles[NUM_READINGS];
 void getMoveDirs(RvrMoveKind moveKind, bool& leftReverse, bool& rightReverse);
 void getMoveSpeeds(RvrMoveKind moveKind, int& leftMotorSpeed, int& rightMotorSpeed);
 
-/****************** MAZE-SOLVING FUNCTIONS ******************************/
+/****************** DECISION MAKERS ******************************/
+
+/*
+RvrMoveWrapper basicCollisionAvoid() {
+    // create a `SonarReadingSet` and peform the sonar sweep to populate it with readings
+    SonarReadingSet currentReadings;
+    currentReadings.doSonarSweep();
+
+    float left_45_dist = currentReadings.
+}
+*/
+
+/****************** BASIC ROVER OPERATIONS ******************************/
 
 void doRvrMove(RvrMoveKind moveKind, unsigned long time) {
     ALog.traceln("`doRvrMove` called with move %s, and time %u", getMoveName(moveKind), time);
@@ -59,16 +71,21 @@ void SonarReadingSet::doSonarSweep() {
         setServoAngle(angle);
 
         float dist = pollDistance();
-        this->distanceReadings[idx] = dist;
-        if (dist == 0.0) {
-            this->failedReadings[idx] = true;
-        } else {
-            this->failedReadings[idx] = false;
-        }
+        bool failed = (dist == 0.0);
+        SonarReading reading = {
+            dist,
+            failed,
+        };
+        this->readings[idx] = reading;
     }
 }
 
 /****************** HELPER FUNCTIONS ******************************/
+
+SonarReading SonarReadingSet::getReadingAtAngle(int angle) {
+    size_t idx = this->angleToIdx(angle);
+    return this->readings[idx];
+}
 
 void SonarReadingSet::printToSerialMonitor() {
     Serial.print("SonarReadingSet { ");
@@ -77,21 +94,18 @@ void SonarReadingSet::printToSerialMonitor() {
         int angle = SonarReadingSet::readingAngles[idx];
         Serial.print(angle);
 
-        float dist = this->distanceReadings[idx];
+        SonarReading reading = this->readings[idx];
         Serial.print(": ");
-        Serial.print(dist);
+        if (reading.failed) {
+            Serial.print("fail");
+        } else {
+            Serial.print(reading.distance);
+        }
         Serial.print(", ");
     }
     Serial.print(" }");
 }
 
-/* int SonarReadingSet::idxToAngle(size_t idx) {
-    ALog.verboseln("`SonarReadingSet::idxToAngle` called with idx %X", idx);
-    if (idx >= NUM_READINGS) {
-        return -1;
-    }
-    return SonarReadingSet::readingAngles[idx];
-} */
 size_t SonarReadingSet::angleToIdx(int angle) {
     ALog.verbose("`SonarReadingSet::angleToIdx` called with angle %d  ", angle);
 

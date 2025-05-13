@@ -2,7 +2,7 @@
 #ifndef ROVER_OP_H
 #define ROVER_OP_H
 
-/****************** OTHER ******************************/
+/****************** DATA TYPES ******************************/
 
 // components control functions
 #include "components.h"
@@ -14,19 +14,35 @@ enum struct RvrMoveKind {
     driveBack,
 };
 
+struct RvrMoveWrapper {
+    RvrMoveKind moveKind;
+    unsigned long time;
+};
+
+/****************** DECISION MAKERS ******************************/
+
+RvrMoveWrapper basicCollisionAvoid();
+
+/****************** BASIC ROVER OPERATIONS ******************************/
+
 #define NUM_READINGS 6
+
+struct SonarReading {
+    float distance;
+    bool failed;
+};
 
 // this struct holds a set of readings for a full sonar sweep
 struct SonarReadingSet {
 public:
     // holds the actual measure distances
-    float distanceReadings[NUM_READINGS];
-
-    // used for tracking which readings failed and which succeeded
-    bool failedReadings[NUM_READINGS];
+    SonarReading readings[NUM_READINGS];
 
     // Sweeps the servo and measures at various angles, setting the distance and failed values.
     void doSonarSweep();
+
+    // gets the distance in this reading set at the specified angle
+    SonarReading getReadingAtAngle(int angle);
 
     // prints out the values of the readings to the serial monitor
     void printToSerialMonitor();
