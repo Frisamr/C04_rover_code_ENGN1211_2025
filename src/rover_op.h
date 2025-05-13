@@ -7,19 +7,11 @@
 // components control functions
 #include "components.h"
 
-enum struct RoverMove {
+enum struct RvrMoveKind {
     turnLeft,
     turnRight,
-    driveForward,
+    driveFwd,
     driveBack,
-};
-
-enum struct RoverAction {
-    turnLeft,
-    turnRight,
-    longStepForward,
-    shortStepFoward,
-    sweepScan,
 };
 
 #define NUM_READINGS 6
@@ -39,7 +31,7 @@ public:
     // prints out the values of the readings to the serial monitor
     void printToSerialMonitor();
 
-    // static methods
+    // ## Static members:
 
     // list of angles to take readings at
     constexpr static int readingAngles[NUM_READINGS] = {0, 10, 45, 90, 135, 180};
@@ -60,9 +52,9 @@ public:
  * @param time How long the rover will do the movement. Measured in microseconds.
  * @return void
  */
-void moveRover(RoverMove move, unsigned long time);
+void doRvrMove(RvrMoveKind moveKind, unsigned long time);
 
 // Get the name of a movement as a string.
-const char* getMoveName(RoverMove move);
+const char* getMoveName(RvrMoveKind moveKind);
 
 #endif // ROVER_OP_H
