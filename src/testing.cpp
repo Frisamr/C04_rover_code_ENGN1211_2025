@@ -43,9 +43,9 @@ void demoLevel_1_part2() {
     }
 
     for (int idx = 0; idx < 4; idx += 1) {
-        doRvrMove(RvrMoveKind::driveFwd, 30 * globals::MICROS_PER_cm);
+        doRvrMove(RvrMoveKind::driveFwd, 30 * globals::MILLIS_PER_CM);
         delay(50);
-        doRvrMove(RvrMoveKind::turnLeft, 90 * globals::MICROS_PER_deg);
+        doRvrMove(RvrMoveKind::turnLeft, 90 * globals::MILLIS_PER_DEG);
         delay(50);
     }
 

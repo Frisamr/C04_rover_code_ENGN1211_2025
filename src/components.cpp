@@ -90,10 +90,10 @@ void setServoAngle(int angle) {
 
     int angleDiffRaw = globals::SERVO_ANGLE - angle;
     unsigned int angleDiff = abs(angleDiffRaw);
-    unsigned long rotationTime = (static_cast<unsigned long>(angleDiff) * constants::SERVO_MICROS_PER_deg);
+    unsigned long rotationTime = (static_cast<unsigned long>(angleDiff) * constants::SERVO_MILLIS_PER_DEG);
 
     ALog.verboseln("delay to allow for rotation: %u", rotationTime);
-    delayMicroseconds(rotationTime);
+    delay(rotationTime);
 
     globals::SERVO_ANGLE = angle;
 }
@@ -128,9 +128,9 @@ void initServo() {
     pinMode(constants::SERVO_PIN, OUTPUT);
 
     // attach the servo to the servo pin
-    globals::THE_SERVO.attach(constants::SERVO_PIN, SERVO_MIN_us, SERVO_MAX_us);
+    globals::THE_SERVO.attach(constants::SERVO_PIN, SERVO_MIN_MICROS, SERVO_MAX_MICROS);
 
-    // set a starting angle
+    // set the starting angle as facing forward to help with straightening the sonar module
     setServoAngle(90);
 }
 

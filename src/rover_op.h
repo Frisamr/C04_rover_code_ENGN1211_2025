@@ -49,7 +49,7 @@ public:
  * Perform a rover movement.
  *
  * @param move The type of movement to perform.
- * @param time How long the rover will do the movement. Measured in microseconds.
+ * @param time How long the rover will do the movement. Measured in milliseconds.
  * @return void
  */
 void doRvrMove(RvrMoveKind moveKind, unsigned long time);

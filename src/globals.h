@@ -44,14 +44,14 @@ namespace constants {
     /****************** SERVO CONFIG ******************************/
 
     // Microseconds pulse width corresponding to the min (0 degrees) angle of the servo.
-    constexpr int SERVO_MIN_us = 590;
+    constexpr int SERVO_MIN_MICROS = 560;
     // Microseconds pulse width corresponding to the max (180 degrees) angle of the servo.
-    constexpr int SERVO_MAX_us = 2530;
+    constexpr int SERVO_MAX_MICROS = 2500;
 
     // After setting the servo angle, we need to wait a bit for it to finishing turning.
     // According to the datasheet, the servo rotates at 500 degrees per second at 6V. This equates to 2ms per degree.
     // However, we are running it at 5V, so add a bit of extra time to compensate.
-    constexpr unsigned long SERVO_MICROS_PER_deg = 2800; // 2.8ms
+    constexpr unsigned long SERVO_MILLIS_PER_DEG = 3;
 
     /****************** ARDUINO PINS ******************************/
 
@@ -93,18 +93,10 @@ namespace globals {
     extern MotorSettings MOTOR_CONFIG;
 
     // how long (in ms) it takes the rover to drive 1cm forward at full speed
-    extern unsigned long MICROS_PER_cm;
+    extern unsigned long MILLIS_PER_CM;
 
     // how long (in ms) it takes the rover to rotate 1 degree at full speed
-    extern unsigned long MICROS_PER_deg;
-
-    // how long the rover will drive for when doing a short step
-    // set so the rover will drive approx. 0.5cm
-    extern unsigned long SHORT_STEP_TIME;
-
-    // how long the rover will drive for when doing a long step
-    // set so the rover will drive 3cm
-    extern unsigned long LONG_STEP_TIME;
+    extern unsigned long MILLIS_PER_DEG;
 
     // used for printing a message about what test is being run on the first run (and running test setup)
     extern bool RUN_START;

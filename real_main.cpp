@@ -24,11 +24,11 @@ using namespace globals;
 /****************** CONFIG ******************************/
 // these are global variables declared in `global.h`
 
-// number of microseconds it takes the rover to drive 1cm forward/backward
-unsigned long globals::MICROS_PER_cm = 182000;
+// number of milliseconds it takes the rover to drive 1cm forward/backward
+unsigned long globals::MILLIS_PER_CM = 182;
 
-// number of microseconds it takes the rover to turn 1 degree
-unsigned long globals::MICROS_PER_deg = 19000;
+// number of milliseconds it takes the rover to turn 1 degree
+unsigned long globals::MILLIS_PER_DEG = 19;
 
 MotorSettings globals::MOTOR_CONFIG = {
     255, //leftMotorDrive;
@@ -36,12 +36,6 @@ MotorSettings globals::MOTOR_CONFIG = {
     255, //leftMotorTurn;
     255, //rightMotorTurn;
 };
-
-// set so the rover will drive approx 0.5cm
-unsigned long globals::SHORT_STEP_TIME = globals::MICROS_PER_cm / 2;
-
-// set so the rover will drive 3cm
-unsigned long globals::LONG_STEP_TIME = globals::MICROS_PER_cm * 3;
 
 /****************** OTHER GLOBALS ******************************/
 // These will be overwritten as the program runs. Don't change them.
@@ -88,8 +82,8 @@ void loop() {
     //testSonarReliability();
     testSonarSweep();
     //testServoAngle();
-    //testMovement(RvrMoveKind::driveFwd, 10 * globals::MICROS_PER_cm);
-    //testMovement(RvrMoveKind::turnLeft, 90 * globals::MICROS_PER_deg);
+    //testMovement(RvrMoveKind::driveFwd, 10 * globals::MILLIS_PER_CM);
+    //testMovement(RvrMoveKind::turnLeft, 90 * globals::MILLIS_PER_DEG);
 }
 
 /****************** CUSTOM LOGGING PREFIX ******************************/

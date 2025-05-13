@@ -44,7 +44,7 @@ void doRvrMove(RvrMoveKind moveKind, unsigned long time) {
     setMotorSpeed(constants::RIGHT_MOTOR, rightMotorSpeed, rightReverse);
 
     // Move for provided time
-    delayMicroseconds(time);
+    delay(time);
 
     // Stop the motors. The motors brake when speed is 0, so the `reverse` setting doesn't matter
     setMotorSpeed(constants::LEFT_MOTOR, 0, false);
