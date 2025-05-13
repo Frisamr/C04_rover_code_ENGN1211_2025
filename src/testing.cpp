@@ -43,9 +43,9 @@ void demoLevel_1_part2() {
     }
 
     for (int idx = 0; idx < 4; idx += 1) {
-        doRvrMove(RvrMoveKind::driveFwd, 30 * globals::MICROS_PER_cm);
+        moveRover(RoverMove::driveForward, 30 * globals::MICROS_PER_cm);
         delay(50);
-        doRvrMove(RvrMoveKind::turnLeft, 90 * globals::MICROS_PER_degree);
+        moveRover(RoverMove::turnLeft, 90 * globals::MICROS_PER_DEGREE);
         delay(50);
     }
 
@@ -102,10 +102,11 @@ void testSonarSweep() {
     // perform the sonar sweep
     readings.doSonarSweep();
 
-    // print out the measured values
+    // print out the measure values
     readings.printToSerialMonitor();
     Serial.println("");
 }
+
 
 // **SONAR RELIABILITY TEST**
 
@@ -148,14 +149,14 @@ void testSonarReliability() {
 
 // Runs the two motors at the provided speeds for the provided time.
 // Used for testing deviation when driving in a straight line and pivoting.
-void testMovement(RvrMoveKind moveKind, unsigned long time) {
+void testMovement(RoverMove move, unsigned long time) {
     if (globals::RUN_START) {
         Serial.println(F("[___TEST] Testing constant motion"));
         delay(2000);
     }
 
-    // perform the movement
-    doRvrMove(moveKind, time);
+    // drive the rover forward with the provided values
+    moveRover(move, time);
 
     // wait for 10 minutes
     delay(10UL * 60 * 1000);

@@ -18,56 +18,39 @@ using namespace globals;
 // import the data type and function declarations
 #include "rover_op.h"
 
-/****************** FORWARD DECLARATIONS ******************************/
-// we have to declare this here because static data members are janky in C++11
 constexpr int SonarReadingSet::readingAngles[NUM_READINGS];
 
-// helper functions for doRvrMove
-void getMoveDirs(RvrMoveKind moveKind, bool& leftReverse, bool& rightReverse);
-void getMoveSpeeds(RvrMoveKind moveKind, int& leftMotorSpeed, int& rightMotorSpeed);
+/****************** DECLARATIONS ******************************/
+void getMoveDirs(RoverMove move, bool& leftReverse, bool& rightReverse);
+void getMoveSpeeds(RoverMove move, int& leftMotorSpeed, int& rightMotorSpeed);
 
-// Get the name of a movement as a string.
-const char* getMoveName(RvrMoveKind moveKind);
 
-/****************** DECISION MAKER FUNCTIONS ******************************/
+/****************** MAZE-SOLVING FUNCTIONS ******************************/
 
-/*
-// Decide what the next move should be.
-// Only considers collision avoidance, not maze solving
-RvrMoveWrapper basicCollisionAvoid() {
-    SonarReadingSet curReadings;
-    curReadings.doSonarSweep();
+void moveRover(RoverMove move, unsigned long time) {
+    ALog.traceln("`driveRover` called with move %s, and time %u", getMoveName(move), time);
 
-    // TODO: finish this function
-}
-*/
-
-/****************** ROVER OPERATIONS ******************************/
-
-void doRvrMove(RvrMoveKind moveKind, unsigned long time) {
-    ALog.traceln("`doRvrMove` called with moveKind %s, and time %u", getMoveName(moveKind), time);
-
-    // use the helper functions to work out how this movement should work
+    // variables for motor settings
     bool leftReverse;
     bool rightReverse;
-    getMoveDirs(moveKind, leftReverse, rightReverse);
+    getMoveDirs(move, leftReverse, rightReverse);
     int leftMotorSpeed;
     int rightMotorSpeed;
-    getMoveSpeeds(moveKind, leftMotorSpeed, rightMotorSpeed);
+    getMoveSpeeds(move, leftMotorSpeed, rightMotorSpeed);
 
     // Spin both motors
     setMotorSpeed(constants::LEFT_MOTOR, leftMotorSpeed, leftReverse);
     setMotorSpeed(constants::RIGHT_MOTOR, rightMotorSpeed, rightReverse);
 
-    Serial.print("move time is ");
-    Serial.println(time);
-    // Drive for provided time
-    delayMicrosLong(time);
+    // Drive forward for provided time
+    delayMicroseconds(time);
 
-    // Stop the motors. The motors brake when speed is 0, so the `reverse` setting doesn't matter
+    // Stop the motors. The motors brake at 0 speed, so reverse doesn't matter
     setMotorSpeed(constants::LEFT_MOTOR, 0, false);
     setMotorSpeed(constants::RIGHT_MOTOR, 0, false);
 }
+
+
 
 void SonarReadingSet::doSonarSweep() {
     ALog.traceln("`SonarReadingSet::doSonarSweep` called");
@@ -94,6 +77,7 @@ void SonarReadingSet::printToSerialMonitor() {
 
         int angle = SonarReadingSet::readingAngles[idx];
         Serial.print(angle);
+
 
         float dist = this->distanceReadings[idx];
         Serial.print(": ");
@@ -123,39 +107,39 @@ size_t SonarReadingSet::angleToIdx(int angle) {
     return 0;
 }
 
-void getMoveDirs(RvrMoveKind moveKind, bool& leftReverse, bool& rightReverse) {
+void getMoveDirs(RoverMove move, bool& leftReverse, bool& rightReverse) {
     // choose motor directions
-    switch (moveKind) {
-    case RvrMoveKind::turnLeft: {
+    switch (move) {
+    case RoverMove::turnLeft: {
         leftReverse = true;
         rightReverse = false;
         return;
     }
-    case RvrMoveKind::turnRight: {
+    case RoverMove::turnRight: {
         leftReverse = false;
         rightReverse = true;
         return;
     }
-    case RvrMoveKind::driveFwd: {
+    case RoverMove::driveForward: {
         leftReverse = false;
         rightReverse = false;
         return;
     }
-    case RvrMoveKind::driveBack: {
+    case RoverMove::driveBack: {
         leftReverse = true;
         rightReverse = true;
         return;
     }
     }
 }
-void getMoveSpeeds(RvrMoveKind moveKind, int& leftMotorSpeed, int& rightMotorSpeed) {
+void getMoveSpeeds(RoverMove move, int& leftMotorSpeed, int& rightMotorSpeed) {
     // choose motor speed
-    if (moveKind == RvrMoveKind::turnLeft || moveKind == RvrMoveKind::turnRight) {
+    if (move == RoverMove::turnLeft || move == RoverMove::turnRight) {
         leftMotorSpeed = globals::MOTOR_CONFIG.leftMotorTurn;
         rightMotorSpeed = globals::MOTOR_CONFIG.rightMotorTurn;
         return;
     }
-    if (moveKind == RvrMoveKind::driveFwd || moveKind == RvrMoveKind::driveBack) {
+    if (move == RoverMove::driveForward || move == RoverMove::driveBack) {
         leftMotorSpeed = globals::MOTOR_CONFIG.leftMotorDrive;
         rightMotorSpeed = globals::MOTOR_CONFIG.rightMotorDrive;
         return;
@@ -165,23 +149,23 @@ void getMoveSpeeds(RvrMoveKind moveKind, int& leftMotorSpeed, int& rightMotorSpe
 namespace rover_move_names {
     const char* turnLeftStr = "turnLeft";
     const char* turnRightStr = "turnRight";
-    const char* driveFwdStr = "driveFwd";
+    const char* driveForwardStr = "driveForward";
     const char* driveBackStr = "driveBack";
 } //namespace rover_move_names
 
 // Get the name of a movement as a C-style string.
-const char* getMoveName(RvrMoveKind moveKind) {
-    switch (moveKind) {
-    case RvrMoveKind::turnLeft: {
+const char* getMoveName(RoverMove move) {
+    switch (move) {
+    case RoverMove::turnLeft: {
         return rover_move_names::turnLeftStr;
     }
-    case RvrMoveKind::turnRight: {
+    case RoverMove::turnRight: {
         return rover_move_names::turnRightStr;
     }
-    case RvrMoveKind::driveFwd: {
-        return rover_move_names::driveFwdStr;
+    case RoverMove::driveForward: {
+        return rover_move_names::driveForwardStr;
     }
-    case RvrMoveKind::driveBack: {
+    case RoverMove::driveBack: {
         return rover_move_names::driveBackStr;
     }
     default: {

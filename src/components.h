@@ -26,27 +26,21 @@ struct MotorSettings {
     int rightMotorTurn;
 };
 
-// `delayMicroseconds()` doesn't work for large values, use this instead.
-void delayMicrosLong(unsigned long us);
-
 // Initialise a motor. Must be called before setting the motor speed.
-void initMotor(const MotorPins& targetMotor);
-
-// Initialise the servo. Must be called before setting the servo angle.
-void initServo();
-
-// Initialise the sonar module. Must be called before polling the sonar module.
-void initSonarMod();
+void initMotor(const MotorPins &targetMotor);
 
 /**
- * Set the speed of a motor.
+ * Set the speed of a motor. The motor must be initialised first.
  *
  * \param targetMotor - which motor will have its speed set
  * \param speed - The speed to run the target motor at. Must be between 255 and 0. If `0`, the motor will brake.
  * \param reverse - Whether the motor should be run in reverse.
  * \return void
  */
-void setMotorSpeed(const MotorPins& targetMotor, int speed, bool reverse);
+void setMotorSpeed(const MotorPins &targetMotor, int speed, bool reverse);
+
+// initialise the sonar module and servo
+void initSonarSystem();
 
 // Measures the distance from the sonar module to an object in front of it,
 // retrying failed attempts up to a certain number of attempts.

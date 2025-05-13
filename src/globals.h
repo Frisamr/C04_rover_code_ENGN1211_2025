@@ -51,7 +51,7 @@ namespace constants {
     // After setting the servo angle, we need to wait a bit for it to finishing turning.
     // According to the datasheet, the servo rotates at 500 degrees per second at 6V. This equates to 2ms per degree.
     // However, we are running it at 5V, so add a bit of extra time to compensate.
-    constexpr unsigned long SERVO_MICROS_PER_degree = 2800; // 2.8ms
+    constexpr unsigned long SERVO_MICROS_PER_DEGREE = 2800; // 2.8ms
 
     /****************** ARDUINO PINS ******************************/
 
@@ -96,7 +96,7 @@ namespace globals {
     extern unsigned long MICROS_PER_cm;
 
     // how long (in ms) it takes the rover to rotate 1 degree at full speed
-    extern unsigned long MICROS_PER_degree;
+    extern unsigned long MICROS_PER_DEGREE;
 
     // how long the rover will drive for when doing a short step
     // set so the rover will drive approx. 0.5cm

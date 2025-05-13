@@ -2,7 +2,7 @@
 #ifndef TESTING_H
 #define TESTING_H
 
-enum struct RvrMoveKind;
+enum struct RoverMove;
 
 /****************** ASSESSMENT LEVELS ******************************/
 
@@ -21,6 +21,6 @@ void testSonarSweep();
 void testServoAngle();
 
 // useful for testing movements in isolation
-void testMovement(RvrMoveKind move, unsigned long time);
+void testMovement(RoverMove move, unsigned long time);
 
 #endif // TESTING_H
