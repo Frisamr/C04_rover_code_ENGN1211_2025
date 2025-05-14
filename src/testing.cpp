@@ -34,18 +34,31 @@ char serialClearBuf[CLEAR_BUF_SIZE];
 
 // **LEVEL 2**
 
+void demo_level_2() {
+    if (globals::RUN_START) {
+        ALog.infoln(F("Level 2"));
+        delay(2000);
+        globals::RUN_START = false;
+    }
+
+    RvrMoveWrapper move = basicCollisionAvoid();
+    ALog.infoln("decided on move kind %s and time %u", getMoveName(move.moveKind), move.time);
+    doRvrMove(move.moveKind, move.time);
+}
+
 // **LEVEL 1**
 
-void demoLevel_1_part2() {
+void demo_level_1_part2() {
     if (globals::RUN_START) {
         ALog.infoln(F("Level 1, part 2"));
         delay(2000);
+        globals::RUN_START = false;
     }
 
     for (int idx = 0; idx < 4; idx += 1) {
-        doRvrMove(RvrMoveKind::driveFwd, 30 * globals::MILLIS_PER_CM);
+        doRvrMove(RvrMoveKind::driveFwd, 30 * constants::MILLIS_PER_CM);
         delay(50);
-        doRvrMove(RvrMoveKind::turnLeft, 90 * globals::MILLIS_PER_DEG);
+        doRvrMove(RvrMoveKind::turnLeft, 90 * constants::MILLIS_PER_DEG);
         delay(50);
     }
 

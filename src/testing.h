@@ -6,8 +6,8 @@ enum struct RvrMoveKind;
 
 /****************** ASSESSMENT LEVELS ******************************/
 
-void demoLevel_1_part1();
-void demoLevel_1_part2();
+void demo_level_1_part2();
+void demo_level_2();
 
 /****************** OTHER TESTING ******************************/
 

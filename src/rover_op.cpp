@@ -28,20 +28,77 @@ void getMoveSpeeds(RvrMoveKind moveKind, int& leftMotorSpeed, int& rightMotorSpe
 
 /****************** DECISION MAKERS ******************************/
 
-/*
+bool readingTooClose(SonarReading reading) {
+    if (reading.failed) {
+        // assume wall is too far away, so we're good
+        return false;
+    }
+    if (reading.distance <= constants::WALL_DIST) {
+        return true;
+    }
+    return false;
+}
+bool readingKindaClose(SonarReading reading) {
+    if (reading.failed) {
+        // assume wall is too far away, so we're good
+        return false;
+    }
+    if (reading.distance <= constants::WALL_DIST + constants::LONG_STEP_DIST) {
+        return true;
+    }
+    return false;
+}
+
 RvrMoveWrapper basicCollisionAvoid() {
+    ALog.traceln("`basicCollisionAvoid()` called");
+
     // create a `SonarReadingSet` and peform the sonar sweep to populate it with readings
     SonarReadingSet currentReadings;
     currentReadings.doSonarSweep();
 
-    float left_45_dist = currentReadings.
+    SonarReading reading_45 = currentReadings.getReadingAtAngle(45);
+    SonarReading reading_90 = currentReadings.getReadingAtAngle(90);
+    SonarReading reading_135 = currentReadings.getReadingAtAngle(135);
+
+    // if walls are too close
+    if (readingTooClose(reading_45) || readingTooClose(reading_90) || readingTooClose(reading_135)) {
+        ALog.infoln("walls too close");
+        RvrMoveWrapper move = {
+            RvrMoveKind::driveFwd,
+            0, // don't move
+        };
+        return move;
+    }
+    // if walls are kinda close
+    if (readingKindaClose(reading_45) || readingKindaClose(reading_90) || readingKindaClose(reading_135)) {
+        ALog.infoln("walls kinda close");
+        unsigned long stepTime = timeToDriveDist(constants::SHORT_STEP_DIST);
+        RvrMoveWrapper move = {
+            RvrMoveKind::driveFwd,
+            stepTime,
+        };
+        return move;
+    }
+
+    // if walls are not close
+    ALog.infoln("walls not close");
+    unsigned long stepTime = timeToDriveDist(constants::LONG_STEP_DIST);
+    RvrMoveWrapper move = {
+        RvrMoveKind::driveFwd,
+        stepTime,
+    };
+    return move;
 }
-*/
 
 /****************** BASIC ROVER OPERATIONS ******************************/
 
 void doRvrMove(RvrMoveKind moveKind, unsigned long time) {
     ALog.traceln("`doRvrMove` called with move %s, and time %u", getMoveName(moveKind), time);
+
+    // don't move if `time` is 0
+    if (time == 0) {
+        return;
+    }
 
     // variables for motor settings
     bool leftReverse;
@@ -81,6 +138,14 @@ void SonarReadingSet::doSonarSweep() {
 }
 
 /****************** HELPER FUNCTIONS ******************************/
+
+unsigned long timeToDriveDist(float dist_cm) {
+    //ALog.verboseln("WHAT ON EARTH: %F", static_cast<float>(constants::MILLIS_PER_CM));
+    float exactTime = dist_cm * static_cast<float>(constants::MILLIS_PER_CM);
+    unsigned long time = static_cast<unsigned long>(round(exactTime));
+    ALog.verboseln("`timeToDriveDist` called with dist %F, got time %u", dist_cm, time);
+    return time;
+}
 
 SonarReading SonarReadingSet::getReadingAtAngle(int angle) {
     size_t idx = this->angleToIdx(angle);
@@ -147,13 +212,13 @@ void getMoveDirs(RvrMoveKind moveKind, bool& leftReverse, bool& rightReverse) {
 void getMoveSpeeds(RvrMoveKind moveKind, int& leftMotorSpeed, int& rightMotorSpeed) {
     // choose motor speed
     if (moveKind == RvrMoveKind::turnLeft || moveKind == RvrMoveKind::turnRight) {
-        leftMotorSpeed = globals::MOTOR_CONFIG.leftMotorTurn;
-        rightMotorSpeed = globals::MOTOR_CONFIG.rightMotorTurn;
+        leftMotorSpeed = constants::MOTOR_CONFIG.leftMotorTurn;
+        rightMotorSpeed = constants::MOTOR_CONFIG.rightMotorTurn;
         return;
     }
     if (moveKind == RvrMoveKind::driveFwd || moveKind == RvrMoveKind::driveBack) {
-        leftMotorSpeed = globals::MOTOR_CONFIG.leftMotorDrive;
-        rightMotorSpeed = globals::MOTOR_CONFIG.rightMotorDrive;
+        leftMotorSpeed = constants::MOTOR_CONFIG.leftMotorDrive;
+        rightMotorSpeed = constants::MOTOR_CONFIG.rightMotorDrive;
         return;
     }
 }

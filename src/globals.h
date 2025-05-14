@@ -15,11 +15,28 @@
 namespace constants {
     /****************** MAZE-SOLVING CONFIG ******************************/
 
-    // how close the rover will drive to a wall before slowing down
-    constexpr float SLOW_THRESHOLD_cm = 4.5;
+    // speed settings for the motors for different movements
+    constexpr MotorSettings MOTOR_CONFIG = {
+        255, //leftMotorDrive;
+        255, //rightMotorDrive;
+        255, //leftMotorTurn;
+        255, //rightMotorTurn;
+    };
 
-    // how close the rover will drive to a wall before stopping
-    constexpr float STOP_THRESHOLD_cm = 3.5;
+    // how long (in ms) it takes the rover to drive 1cm forward/backward
+    constexpr uint16_t MILLIS_PER_CM = 156;
+
+    // how long (in ms) it takes the rover to turn 1 degree
+    constexpr unsigned long MILLIS_PER_DEG = 19;
+
+    // how close the rover will aim to drive to the left wall, in cm
+    constexpr float WALL_DIST = 3.5;
+
+    // how far the rover will move when it is far away from a wall, in cm
+    constexpr float LONG_STEP_DIST = 3.0;
+
+    // how far the rover will move when it is close to a wall, in cm
+    constexpr float SHORT_STEP_DIST = 0.5;
 
     /****************** SONAR CONFIG ******************************/
 
@@ -27,7 +44,7 @@ namespace constants {
     // This prevents the sonar module from being polled too quickly and
     // the previous pulse interfering with the next measurement.
     // This variable controls the delay.
-    constexpr int POLL_COOLDOWN_ms = 80;
+    constexpr int POLL_COOLDOWN_MS = 80;
 
     // Min number of times the sonar subsytem will poll the sonar module.
     // If the sonar is polled multiple times, the final calculated distance will be the
@@ -89,14 +106,6 @@ namespace globals {
 
     // stores the current angle the servo is at
     extern int SERVO_ANGLE;
-
-    extern MotorSettings MOTOR_CONFIG;
-
-    // how long (in ms) it takes the rover to drive 1cm forward at full speed
-    extern unsigned long MILLIS_PER_CM;
-
-    // how long (in ms) it takes the rover to rotate 1 degree at full speed
-    extern unsigned long MILLIS_PER_DEG;
 
     // used for printing a message about what test is being run on the first run (and running test setup)
     extern bool RUN_START;

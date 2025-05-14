@@ -27,10 +27,10 @@ constexpr float HALF_TIMES_SPEED = ((340.0 * 100.0) / (1000.0 * 1000.0)) * 0.5;
 /****************** SONAR ******************************/
 
 float pollSonarModuleRaw() {
-    ALog.traceln("`pollSonarModuleRaw()` called");
+    ALog.verboseln("`pollSonarModuleRaw()` called");
 
     // this prevents the previous pulse interfering with the next measurement
-    delay(POLL_COOLDOWN_ms);
+    delay(POLL_COOLDOWN_MS);
 
     // send a 10us pulse to trigger the sonar module
     digitalWrite(constants::TRIGGER_PIN, HIGH);
@@ -90,7 +90,8 @@ void setServoAngle(int angle) {
 
     int angleDiffRaw = globals::SERVO_ANGLE - angle;
     unsigned int angleDiff = abs(angleDiffRaw);
-    unsigned long rotationTime = (static_cast<unsigned long>(angleDiff) * constants::SERVO_MILLIS_PER_DEG);
+    // add extra milliseconds to allow sonar module to settle
+    unsigned long rotationTime = (static_cast<unsigned long>(angleDiff) * constants::SERVO_MILLIS_PER_DEG) + 50;
 
     ALog.verboseln("delay to allow for rotation: %u", rotationTime);
     delay(rotationTime);
@@ -101,7 +102,7 @@ void setServoAngle(int angle) {
 /****************** MOTOR CONTROL ******************************/
 
 void setMotorSpeed(const MotorPins& targetMotor, int speed, bool reverse) {
-    ALog.verboseln("`setMotorSpeed` called with speed %d and reverse %T", speed, reverse);
+    //ALog.verboseln("`setMotorSpeed` called with speed %d and reverse %T", speed, reverse);
 
     if (!reverse) {
         // spin motor forwards

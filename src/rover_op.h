@@ -23,6 +23,15 @@ struct RvrMoveWrapper {
 
 RvrMoveWrapper basicCollisionAvoid();
 
+/****************** UTILS ******************************/
+
+// Calculate how long it will take to drive a certain (potentially non-integer!) distance in cm.
+// Takes the distance in cm, and returns the time in milliseconds.
+unsigned long timeToDriveDist(float dist_cm);
+
+// Get the name of a movement as a string.
+const char* getMoveName(RvrMoveKind moveKind);
+
 /****************** BASIC ROVER OPERATIONS ******************************/
 
 #define NUM_READINGS 6
@@ -69,8 +78,5 @@ public:
  * @return void
  */
 void doRvrMove(RvrMoveKind moveKind, unsigned long time);
-
-// Get the name of a movement as a string.
-const char* getMoveName(RvrMoveKind moveKind);
 
 #endif // ROVER_OP_H

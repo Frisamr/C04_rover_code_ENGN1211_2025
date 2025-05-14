@@ -21,22 +21,6 @@ using namespace globals;
 // testing routines and assessment level demos
 #include "src/testing.h"
 
-/****************** CONFIG ******************************/
-// these are global variables declared in `global.h`
-
-// number of milliseconds it takes the rover to drive 1cm forward/backward
-unsigned long globals::MILLIS_PER_CM = 182;
-
-// number of milliseconds it takes the rover to turn 1 degree
-unsigned long globals::MILLIS_PER_DEG = 19;
-
-MotorSettings globals::MOTOR_CONFIG = {
-    255, //leftMotorDrive;
-    255, //rightMotorDrive;
-    255, //leftMotorTurn;
-    255, //rightMotorTurn;
-};
-
 /****************** OTHER GLOBALS ******************************/
 // These will be overwritten as the program runs. Don't change them.
 
@@ -60,7 +44,7 @@ void setup() {
 
     // setup logging
     ALog.setPrefix(printPrefix);                       // set custom prefix that shows log level
-    ALog.begin(LOG_LEVEL_INFO, &Serial, false, false); // logging settings: level, output, show level, show colour
+    ALog.begin(LOG_LEVEL_TRACE, &Serial, false, false); // logging settings: level, output, show level, show colour
 
     // initialise the motors, sonar module, and servo
     initMotor(constants::LEFT_MOTOR);
@@ -75,15 +59,16 @@ void setup() {
 void loop() {
     /* test level demos */
 
-    //demoLevel_1_part2();
+    //demo_level_1_part2();
+    //demo_level_2();
 
     /* testing routines */
 
-    //testSonarReliability();
-    testSonarSweep();
+    testSonarReliability();
+    //testSonarSweep();
     //testServoAngle();
-    //testMovement(RvrMoveKind::driveFwd, 10 * globals::MILLIS_PER_CM);
-    //testMovement(RvrMoveKind::turnLeft, 90 * globals::MILLIS_PER_DEG);
+    //testMovement(RvrMoveKind::driveFwd, timeToDriveDist(10.0));
+    //testMovement(RvrMoveKind::turnLeft, 90 * constants::MILLIS_PER_DEG);
 }
 
 /****************** CUSTOM LOGGING PREFIX ******************************/

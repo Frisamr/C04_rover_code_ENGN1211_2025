@@ -22,10 +22,12 @@ SpacesInLineCommentPrefix:
   Minimum: 0
 
 # Disable brace wrapping (OTB style)
+BreakBeforeBraces: Custom
 BraceWrapping:
   AfterCaseLabel: false
   AfterClass: false
-  AfterControlStatement: Never
+  # enable for multi-line control statements
+  AfterControlStatement: MultiLine
   AfterEnum: false
   AfterFunction: false
   AfterNamespace: false
