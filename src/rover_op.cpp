@@ -19,11 +19,9 @@ using namespace globals;
 #include "rover_op.h"
 
 /****************** FORWARD DECLARATIONS ******************************/
-// we have to declare these here because static data members are janky in C++11
-constexpr int SonarReadingSet::readingAngles[NUM_READINGS];
-constexpr float SonarReadingSet::readingOffsets[NUM_READINGS];
 
 // helper functions for `doRvrMove`
+
 void getMoveDirs(RvrMoveKind moveKind, bool& leftReverse, bool& rightReverse);
 void getMoveSpeeds(RvrMoveKind moveKind, int& leftMotorSpeed, int& rightMotorSpeed);
 
@@ -67,42 +65,39 @@ int8_t alignToWalls() {
 }
 */
 
-bool readingTooClose(SonarReading reading) {
+bool readingCloserThan(SonarReading& reading, float dist) {
     if (reading.failed) {
         // assume wall is too far away, so we're good
         return false;
     }
-    if (reading.distance <= constants::WALL_DIST) {
+    if (reading.distance <= dist) {
         return true;
     }
     return false;
 }
-bool readingKindaClose(SonarReading reading) {
-    if (reading.failed) {
-        // assume wall is too far away, so we're good
-        return false;
-    }
-    if (reading.distance <= constants::WALL_DIST + constants::LONG_STEP_DIST) {
-        return true;
-    }
-    return false;
-}
+
+constexpr float BASIC_COLLISION_OFFSET = -1.6;
 
 RvrMoveWrapper basicCollisionAvoid() {
     ALog.traceln("`basicCollisionAvoid()` called");
 
-    // create a `SonarReadingSet` and peform the sonar sweep to populate it with readings
-    SonarReadingSet currentReadings;
-    currentReadings.doSonarSweep();
-    setServoAngle(90);
-    currentReadings.printToSerialMonitor();
+    // take readings
+    SonarReading reading_45 = takeReadingAtAngle(45);
+    SonarReading reading_90 = takeReadingAtAngle(90);
+    SonarReading reading_135 = takeReadingAtAngle(135);
 
-    SonarReading reading_45 = currentReadings.getReadingAtAngle(45);
-    SonarReading reading_90 = currentReadings.getReadingAtAngle(90);
-    SonarReading reading_135 = currentReadings.getReadingAtAngle(135);
+    // apply offset
+    reading_45.offsetBy(BASIC_COLLISION_OFFSET);
+    reading_90.offsetBy(BASIC_COLLISION_OFFSET);
+    reading_135.offsetBy(BASIC_COLLISION_OFFSET);
+
+    // set the servo module back to straight ahead.
+    setServoAngle(90);
 
     // if walls are too close
-    if (readingTooClose(reading_45) || readingTooClose(reading_90) || readingTooClose(reading_135)) {
+    if (readingCloserThan(reading_45, constants::WALL_DIST) || readingCloserThan(reading_90, constants::WALL_DIST) ||
+        readingCloserThan(reading_135, constants::WALL_DIST))
+    {
         ALog.infoln("walls too close");
         RvrMoveWrapper move = {
             RvrMoveKind::driveFwd,
@@ -111,7 +106,10 @@ RvrMoveWrapper basicCollisionAvoid() {
         return move;
     }
     // if walls are kinda close
-    if (readingKindaClose(reading_45) || readingKindaClose(reading_90) || readingKindaClose(reading_135)) {
+    if (readingCloserThan(reading_45, constants::WALL_DIST + constants::LONG_STEP_DIST) ||
+        readingCloserThan(reading_90, constants::WALL_DIST + constants::LONG_STEP_DIST) ||
+        readingCloserThan(reading_135, constants::WALL_DIST + constants::LONG_STEP_DIST))
+    {
         ALog.infoln("walls kinda close");
         unsigned long stepTime = timeToDriveDist(constants::SHORT_STEP_DIST);
         RvrMoveWrapper move = {
@@ -132,6 +130,19 @@ RvrMoveWrapper basicCollisionAvoid() {
 }
 
 /****************** BASIC ROVER OPERATIONS ******************************/
+
+SonarReading takeReadingAtAngle(int angle) {
+    ALog.traceln("`takeReadingAtAngle` called with angle %d", angle);
+
+    setServoAngle(angle);
+    float dist = pollDistance();
+    bool fail = (dist == 0.0);
+    SonarReading reading = {
+        dist,
+        fail,
+    };
+    return reading;
+}
 
 void doRvrMove(RvrMoveKind moveKind, unsigned long time) {
     ALog.traceln("`doRvrMove` called with move %s, and time %u", getMoveName(moveKind), time);
@@ -161,27 +172,13 @@ void doRvrMove(RvrMoveKind moveKind, unsigned long time) {
     setMotorSpeed(constants::RIGHT_MOTOR, 0, false);
 }
 
-void SonarReadingSet::doSonarSweep() {
-    ALog.traceln("`SonarReadingSet::doSonarSweep` called");
+/****************** HELPER FUNCTIONS ******************************/
 
-    for (size_t idx = 0; idx < NUM_READINGS; idx += 1) {
-        int angle = SonarReadingSet::readingAngles[idx];
-        setServoAngle(angle);
-
-        float dist = pollDistance();
-        bool fail = (dist == 0.0);
-        if (!fail) {
-            dist -= SonarReadingSet::readingOffsets[idx];
-        }
-        SonarReading reading = {
-            dist,
-            fail,
-        };
-        this->readings[idx] = reading;
+void SonarReading::offsetBy(float offset) {
+    if (!(this->failed)) {
+        this->distance += offset;
     }
 }
-
-/****************** HELPER FUNCTIONS ******************************/
 
 unsigned long timeToDriveDist(float dist_cm) {
     //ALog.verboseln("WHAT ON EARTH: %F", static_cast<float>(constants::MILLIS_PER_CM));
@@ -189,43 +186,6 @@ unsigned long timeToDriveDist(float dist_cm) {
     unsigned long time = static_cast<unsigned long>(round(exactTime));
     ALog.verboseln("`timeToDriveDist` called with dist %F, got time %u", dist_cm, time);
     return time;
-}
-
-SonarReading SonarReadingSet::getReadingAtAngle(int angle) {
-    size_t idx = this->angleToIdx(angle);
-    return this->readings[idx];
-}
-
-void SonarReadingSet::printToSerialMonitor() {
-    Serial.print("SonarReadingSet { ");
-    for (size_t idx = 0; idx < NUM_READINGS; idx += 1) {
-
-        int angle = SonarReadingSet::readingAngles[idx];
-        Serial.print(angle);
-
-        SonarReading reading = this->readings[idx];
-        Serial.print(": ");
-        if (reading.failed) {
-            Serial.print("fail");
-        } else {
-            Serial.print(reading.distance);
-        }
-        Serial.print(", ");
-    }
-    Serial.print(" }");
-}
-
-size_t SonarReadingSet::angleToIdx(int angle) {
-    ALog.verbose("`SonarReadingSet::angleToIdx` called with angle %d  ", angle);
-
-    for (size_t idx = 0; idx < NUM_READINGS; idx += 1) {
-        if (angle == SonarReadingSet::readingAngles[idx]) {
-            ALog.verboseln("got idx %X", idx);
-            return idx;
-        }
-    }
-    ALog.verboseln("could not find angle, returning 0");
-    return 0;
 }
 
 void getMoveDirs(RvrMoveKind moveKind, bool& leftReverse, bool& rightReverse) {

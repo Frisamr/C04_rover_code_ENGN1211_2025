@@ -18,16 +18,16 @@ namespace constants {
     // speed settings for the motors for different movements
     constexpr MotorSettings MOTOR_CONFIG = {
         255, //leftMotorDrive
-        247, //rightMotorDrive
+        243, //rightMotorDrive
         255, //leftMotorTurn
         255, //rightMotorTurn
     };
 
     // how long (in ms) it takes the rover to drive 1cm forward/backward
-    constexpr uint16_t MILLIS_PER_CM = 154;
+    constexpr uint16_t MILLIS_PER_CM = 193;
 
     // how long (in ms) it takes the rover to turn 1 degree
-    constexpr unsigned long MILLIS_PER_DEG = 19;
+    constexpr unsigned long MILLIS_PER_DEG = 17;
 
     // how close the rover will aim to drive to the left wall, in cm
     constexpr float WALL_DIST = 3.5;

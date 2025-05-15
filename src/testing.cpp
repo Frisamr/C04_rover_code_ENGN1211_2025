@@ -76,16 +76,40 @@ void demo_level_1_part2() {
 
 /****************** OTHER TESTING ******************************/
 
-// **SERVO ANGLE TEST**
-
 // buffer used for parsing ints
 const int INT_BUF_SIZE = 7;
 char intBuf[INT_BUF_SIZE];
 
+// **ANGLED SONAR TEST**
+
+void testAngledSonar() {
+    if (globals::RUN_START) {
+        Serial.println(F("[___TEST] Testing angled sonar"));
+        delay(300);
+        globals::RUN_START = false;
+    }
+
+    Serial.println(F("[___TEST] Enter servo angle/microseconds pulse length"));
+    while (!Serial.available()) {
+        ; // wait for a number to be sent on the Serial Monitor
+    }
+    size_t len = Serial.readBytesUntil(',', intBuf, (INT_BUF_SIZE - 1));
+    size_t idx = min(len, (INT_BUF_SIZE - 1));
+    intBuf[idx] = '\0'; // null terminate the string
+    int input_angle = atoi(intBuf);
+
+    ALog.infoln("got angle %d degrees", input_angle);
+
+    SonarReading reading = takeReadingAtAngle(input_angle);
+    ALog.infoln("got reading {dist = %F, fail=%T}", reading.distance, reading.failed);
+}
+
+// **SERVO ANGLE TEST**
+
 void testServoAngle() {
     if (globals::RUN_START) {
         Serial.println(F("[___TEST] Testing servo angle PWM behaviour"));
-        delay(1000);
+        delay(300);
         globals::RUN_START = false;
     }
 
@@ -102,30 +126,6 @@ void testServoAngle() {
 
     //globals::THE_SERVO.writeMicroseconds(input_num);
     globals::THE_SERVO.write(input_num);
-}
-
-// **SONAR SWEEP TEST**
-
-void testSonarSweep() {
-    if (globals::RUN_START) {
-        Serial.println(F("[___TEST] Testing sonar sweep"));
-        globals::RUN_START = false;
-    }
-    Serial.println("");
-    Serial.println(F("[___TEST] Press <Enter> to start a new sweep."));
-    while (!Serial.available()) {
-    }
-    Serial.readBytesUntil('\n', serialClearBuf, CLEAR_BUF_SIZE);
-
-    // create a variable to store the readings in
-    SonarReadingSet readings;
-
-    // perform the sonar sweep
-    readings.doSonarSweep();
-
-    // print out the measured values
-    readings.printToSerialMonitor();
-    Serial.println("");
 }
 
 // **SONAR RELIABILITY TEST**

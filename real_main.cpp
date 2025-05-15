@@ -44,7 +44,7 @@ void setup() {
 
     // setup logging
     ALog.setPrefix(printPrefix);                       // set custom prefix that shows log level
-    ALog.begin(LOG_LEVEL_TRACE, &Serial, false, false); // logging settings: level, output, show level, show colour
+    ALog.begin(LOG_LEVEL_INFO, &Serial, false, false); // logging settings: level, output, show level, show colour
 
     // initialise the motors, sonar module, and servo
     initMotor(constants::LEFT_MOTOR);
@@ -64,11 +64,11 @@ void loop() {
 
     /* testing routines */
 
-    testSonarReliability();
-    //testSonarSweep();
+    //testAngledSonar()
+    //testSonarReliability();
     //testServoAngle();
-    //testMovement(RvrMoveKind::driveFwd, timeToDriveDist(10.0));
-    //testMovement(RvrMoveKind::turnLeft, 90 * constants::MILLIS_PER_DEG);
+    //testMovement(RvrMoveKind::driveFwd, timeToDriveDist(0.5));
+    testMovement(RvrMoveKind::turnLeft, 90 * constants::MILLIS_PER_DEG);
 }
 
 /****************** CUSTOM LOGGING PREFIX ******************************/

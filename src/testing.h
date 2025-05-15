@@ -11,11 +11,11 @@ void demo_level_2();
 
 /****************** OTHER TESTING ******************************/
 
+// routine for testing sonar behaviour at different angles
+void testAngledSonar();
+
 // routine for testing the reliability of the sonar subsystem
 void testSonarReliability();
-
-// routine for testing the sonar sweep code
-void testSonarSweep();
 
 // routine for checking the angle of the servo
 void testServoAngle();
