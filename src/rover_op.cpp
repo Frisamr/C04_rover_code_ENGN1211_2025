@@ -19,14 +19,53 @@ using namespace globals;
 #include "rover_op.h"
 
 /****************** FORWARD DECLARATIONS ******************************/
-// we have to declare this here because static data members are janky in C++11
+// we have to declare these here because static data members are janky in C++11
 constexpr int SonarReadingSet::readingAngles[NUM_READINGS];
+constexpr float SonarReadingSet::readingOffsets[NUM_READINGS];
 
 // helper functions for `doRvrMove`
 void getMoveDirs(RvrMoveKind moveKind, bool& leftReverse, bool& rightReverse);
 void getMoveSpeeds(RvrMoveKind moveKind, int& leftMotorSpeed, int& rightMotorSpeed);
 
-/****************** DECISION MAKERS ******************************/
+/****************** MAZE SOLVING ******************************/
+
+// TODO
+/*
+RvrMoveWrapper turn90() {
+    ALog.traceln("`turn90()` called");
+
+    // create a `SonarReadingSet` and peform the sonar sweep to populate it with readings
+    SonarReadingSet currentReadings;
+    currentReadings.doSonarSweep();
+    setServoAngle(90);
+    currentReadings.printToSerialMonitor();
+
+    SonarReading straight = currentReadings.getReadingAtAngle(90);
+    SonarReading left = currentReadings.getReadingAtAngle(180);
+    SonarReading right = currentReadings.getReadingAtAngle(0);
+
+    if (straight.distance < constants::WALL_DIST) {
+        if (left.distance > 23.0) {
+            RvrMoveWrapper move = {
+                RvrMoveKind::turnLeft,
+                90 * constants::MILLIS_PER_DEG,
+            };
+            return move;
+        }
+    }
+}
+*/
+
+/*
+int8_t alignToWalls() {
+    ALog.traceln("`alignToWalls` called");
+
+    float prevLeftDist = 0.0;
+    while (true) {
+        doRvrMove()
+    }
+}
+*/
 
 bool readingTooClose(SonarReading reading) {
     if (reading.failed) {
@@ -55,6 +94,8 @@ RvrMoveWrapper basicCollisionAvoid() {
     // create a `SonarReadingSet` and peform the sonar sweep to populate it with readings
     SonarReadingSet currentReadings;
     currentReadings.doSonarSweep();
+    setServoAngle(90);
+    currentReadings.printToSerialMonitor();
 
     SonarReading reading_45 = currentReadings.getReadingAtAngle(45);
     SonarReading reading_90 = currentReadings.getReadingAtAngle(90);
@@ -128,10 +169,13 @@ void SonarReadingSet::doSonarSweep() {
         setServoAngle(angle);
 
         float dist = pollDistance();
-        bool failed = (dist == 0.0);
+        bool fail = (dist == 0.0);
+        if (!fail) {
+            dist -= SonarReadingSet::readingOffsets[idx];
+        }
         SonarReading reading = {
             dist,
-            failed,
+            fail,
         };
         this->readings[idx] = reading;
     }

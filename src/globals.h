@@ -17,14 +17,14 @@ namespace constants {
 
     // speed settings for the motors for different movements
     constexpr MotorSettings MOTOR_CONFIG = {
-        255, //leftMotorDrive;
-        255, //rightMotorDrive;
-        255, //leftMotorTurn;
-        255, //rightMotorTurn;
+        255, //leftMotorDrive
+        247, //rightMotorDrive
+        255, //leftMotorTurn
+        255, //rightMotorTurn
     };
 
     // how long (in ms) it takes the rover to drive 1cm forward/backward
-    constexpr uint16_t MILLIS_PER_CM = 156;
+    constexpr uint16_t MILLIS_PER_CM = 154;
 
     // how long (in ms) it takes the rover to turn 1 degree
     constexpr unsigned long MILLIS_PER_DEG = 19;
@@ -51,7 +51,7 @@ namespace constants {
     // average of the readings.
     constexpr int8_t MIN_POLL_ATTEMPTS = 3;
     // Max number of times the sonar subsystem will re-try polling the sonar module when measurements fail.
-    constexpr int8_t MAX_POLL_ATTEMPTS = 10;
+    constexpr int8_t MAX_POLL_ATTEMPTS = 6;
 
     // The nominal maximum operating distance the HC-SR04 is 400cm. The full length of the maze is just under 80cm.
     // So if we read a value of, say, 500cm or 900cm, clearly something has gone wrong.

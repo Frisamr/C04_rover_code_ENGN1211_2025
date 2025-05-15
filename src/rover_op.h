@@ -59,7 +59,10 @@ public:
     // ## Static members:
 
     // list of angles to take readings at
-    constexpr static int readingAngles[NUM_READINGS] = {0, 10, 45, 90, 135, 180};
+    constexpr static int readingAngles[NUM_READINGS] = {0, 45, 90, 135, 170, 180};
+
+    // sonar module offsets for each reading angle
+    constexpr static float readingOffsets[NUM_READINGS] = {6.0, 1.0, 1.0, 1.0, 5.5, 6.0};
 
     // Get the angle associated with a particular distance reading index.
     // Returns `-1` if the index is out of bounds

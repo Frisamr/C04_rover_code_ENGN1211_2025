@@ -43,6 +43,14 @@ void demo_level_2() {
 
     RvrMoveWrapper move = basicCollisionAvoid();
     ALog.infoln("decided on move kind %s and time %u", getMoveName(move.moveKind), move.time);
+
+    /*
+    Serial.println(F("[___TEST] Press <Enter> to do next movement."));
+    while (!Serial.available()) {
+    }
+    Serial.readBytesUntil('\n', serialClearBuf, CLEAR_BUF_SIZE);
+    */
+
     doRvrMove(move.moveKind, move.time);
 }
 
