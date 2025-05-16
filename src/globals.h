@@ -18,19 +18,13 @@ namespace constants {
     // speed settings for the motors for different movements
     constexpr MotorSettings MOTOR_CONFIG = {
         255, //leftMotorDrive
-        243, //rightMotorDrive
+        246, //rightMotorDrive
         255, //leftMotorTurn
         255, //rightMotorTurn
     };
 
-    // how long (in ms) it takes the rover to drive 1cm forward/backward
-    constexpr uint16_t MILLIS_PER_CM = 193;
-
-    // how long (in ms) it takes the rover to turn 1 degree
-    constexpr unsigned long MICROS_PER_DEG = 21200;
-
     // how close the rover will aim to drive to the left wall, in cm
-    constexpr float WALL_DIST = 3.5;
+    constexpr float WALL_DIST = 1.1;
 
     // how far the rover will move when it is far away from a wall, in cm
     constexpr float LONG_STEP_DIST = 3.0;
@@ -101,6 +95,11 @@ namespace constants {
 // Because these variables are non-constant, they cannot be initialised in this header file.
 // They must be initialised in the main file.
 namespace globals {
+    extern uint16_t MILLIS_PER_CM;
+
+    // how long (in ms) it takes the rover to turn 1 degree
+    extern unsigned long MILLIS_45_DEG;
+
     // global servo object
     extern Servo THE_SERVO;
 

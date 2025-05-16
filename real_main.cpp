@@ -21,7 +21,13 @@ using namespace globals;
 // testing routines and assessment level demos
 #include "src/testing.h"
 
-/****************** OTHER GLOBALS ******************************/
+/****************** GLOBALS ******************************/
+// how long (in ms) it takes the rover to drive 1cm forward/backward
+uint16_t globals::MILLIS_PER_CM = 193;
+
+// how long (in ms) it takes the rover to turn 1 degree
+unsigned long globals::MILLIS_45_DEG = 1003;
+
 // These will be overwritten as the program runs. Don't change them.
 
 bool globals::RUN_START = true;
@@ -59,16 +65,17 @@ void setup() {
 void loop() {
     /* test level demos */
 
-    demo_level_1_part2();
+    //demo_level_1_part2();
     //demo_level_2();
+    //demo_level_345();
 
     /* testing routines */
 
-    //testAngledSonar()
+    //testAngledSonar();
     //testSonarReliability();
     //testServoAngle();
-    //testMovement(RvrMoveKind::driveFwd, timeToDriveDist(0.5));
-    //testMovement(RvrMoveKind::turnLeft, 90 * constants::MICROS_PER_DEG);
+    //testMovement(RvrMoveKind::driveFwd, timeToDriveDist(0.5), 1);
+    testMovement(RvrMoveKind::turnLeft45, 999, 8);
 }
 
 /****************** CUSTOM LOGGING PREFIX ******************************/

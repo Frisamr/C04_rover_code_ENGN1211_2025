@@ -8,8 +8,8 @@
 #include "components.h"
 
 enum struct RvrMoveKind {
-    turnLeft,
-    turnRight,
+    turnLeft45,
+    turnRight45,
     driveFwd,
     driveBack,
 };
@@ -20,6 +20,8 @@ struct RvrMoveWrapper {
 };
 
 /****************** DECISION MAKERS ******************************/
+
+void solveMaze();
 
 RvrMoveWrapper basicCollisionAvoid();
 
@@ -47,8 +49,7 @@ SonarReading takeReadingAtAngle(int angle);
  * Perform a rover movement.
  *
  * @param move The type of movement to perform.
- * @param time How long the rover will do the movement. Measured in milliseconds for drive moves and
- * microseconds for turn moves.
+ * @param time How long the rover will do the movement. Measured in milliseconds. Ignored for turn moves.
  * @return void
  */
 void doRvrMove(RvrMoveKind moveKind, unsigned long time);
