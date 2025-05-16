@@ -18,16 +18,16 @@ namespace constants {
     // speed settings for the motors for different movements
     constexpr MotorSettings MOTOR_CONFIG = {
         255, //leftMotorDrive
-        246, //rightMotorDrive
+        250, //rightMotorDrive
         255, //leftMotorTurn
         255, //rightMotorTurn
     };
 
     // how close the rover will aim to drive to the left wall, in cm
-    constexpr float WALL_DIST = 1.1;
+    constexpr float WALL_DIST = 1.5;
 
     // how far the rover will move when it is far away from a wall, in cm
-    constexpr float LONG_STEP_DIST = 3.0;
+    constexpr float LONG_STEP_DIST = 4.0;
 
     // how far the rover will move when it is close to a wall, in cm
     constexpr float SHORT_STEP_DIST = 0.5;

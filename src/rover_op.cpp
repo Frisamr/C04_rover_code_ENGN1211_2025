@@ -27,9 +27,8 @@ void getMoveSpeeds(RvrMoveKind moveKind, int& leftMotorSpeed, int& rightMotorSpe
 
 /****************** MAZE SOLVING ******************************/
 
-// TODO
-
 constexpr float BASIC_COLLISION_OFFSET = -1.6;
+constexpr float TURN_HACK = 2.5;
 
 bool nextToWall = false;
 
@@ -53,8 +52,7 @@ void solveMaze() {
         SonarReading reading_straight = takeReadingAtAngle(90);
         reading_straight.offsetBy(BASIC_COLLISION_OFFSET);
 
-        bool vclose = readingCloserThan(reading_straight, constants::WALL_DIST);
-        bool kclose = readingCloserThan(reading_straight, constants::WALL_DIST + constants::LONG_STEP_DIST);
+        bool close = readingCloserThan(reading_straight, constants::WALL_DIST + constants::LONG_STEP_DIST);
 
         reading_straight = takeReadingAtAngle(90);
         reading_straight.offsetBy(BASIC_COLLISION_OFFSET);
@@ -66,6 +64,9 @@ void solveMaze() {
             // turn left
             if (!readingCloserThan(reading_left, 16.0)) {
                 doRvrMove(RvrMoveKind::turnLeft45, 999);
+                delay(20);
+                doRvrMove(RvrMoveKind::driveFwd, timeToDriveDist(TURN_HACK));
+                delay(20);
                 doRvrMove(RvrMoveKind::turnLeft45, 999);
                 nextToWall = false;
                 continue;
@@ -73,6 +74,9 @@ void solveMaze() {
             // turn right
             if (!readingCloserThan(reading_right, 16.0)) {
                 doRvrMove(RvrMoveKind::turnRight45, 999);
+                delay(20);
+                doRvrMove(RvrMoveKind::driveFwd, timeToDriveDist(TURN_HACK));
+                delay(20);
                 doRvrMove(RvrMoveKind::turnRight45, 999);
                 nextToWall = false;
                 continue;
@@ -86,11 +90,18 @@ void solveMaze() {
             continue;
         }
 
-        // short step
-        if (!vclose && kclose) {
-            SonarReading reading_straight2 = takeReadingAtAngle(90);
-            reading_straight2.offsetBy(BASIC_COLLISION_OFFSET);
-            float req_dist = reading_straight2.distance - constants::WALL_DIST;
+        // move up to wall
+        if (close) {
+            float req_dist = 0.0;
+
+            for (int i = 0; i < 5; i += 1) {
+                SonarReading reading_straight2 = takeReadingAtAngle(90);
+                reading_straight2.offsetBy(BASIC_COLLISION_OFFSET);
+                float poll_dist = reading_straight2.distance - constants::WALL_DIST;
+                req_dist += (max(poll_dist, 0.0));
+            }
+
+            req_dist = req_dist / 5;
 
             doRvrMove(RvrMoveKind::driveFwd, timeToDriveDist(req_dist));
             nextToWall = true;
@@ -102,7 +113,16 @@ void solveMaze() {
     }
 }
 
+bool detected_coll = false;
+
 RvrMoveWrapper basicCollisionAvoid() {
+    if (detected_coll) {
+        RvrMoveWrapper move = {
+            RvrMoveKind::driveBack,
+            0, // don't move
+        };
+        return move;
+    }
     ALog.traceln("`basicCollisionAvoid()` called");
 
     // take readings
@@ -118,28 +138,17 @@ RvrMoveWrapper basicCollisionAvoid() {
     // set the servo module back to straight ahead.
     setServoAngle(90);
 
-    // if walls are too close
-    if (readingCloserThan(reading_45, constants::WALL_DIST) || readingCloserThan(reading_90, constants::WALL_DIST) ||
-        readingCloserThan(reading_135, constants::WALL_DIST))
-    {
-        ALog.infoln("walls too close");
-        RvrMoveWrapper move = {
-            RvrMoveKind::driveFwd,
-            0, // don't move
-        };
-        return move;
-    }
-    // if walls are kinda close
+    // if walls are close
     if (readingCloserThan(reading_45, constants::WALL_DIST + constants::LONG_STEP_DIST) ||
         readingCloserThan(reading_90, constants::WALL_DIST + constants::LONG_STEP_DIST) ||
         readingCloserThan(reading_135, constants::WALL_DIST + constants::LONG_STEP_DIST))
     {
-        ALog.infoln("walls kinda close");
-        unsigned long stepTime = timeToDriveDist(constants::SHORT_STEP_DIST);
+        ALog.infoln("walls too close");
         RvrMoveWrapper move = {
-            RvrMoveKind::driveFwd,
-            stepTime,
+            RvrMoveKind::driveBack,
+            timeToDriveDist(3.0), // drive back when a collision is detected
         };
+        detected_coll = true;
         return move;
     }
 
@@ -189,7 +198,7 @@ void doRvrMove(RvrMoveKind moveKind, unsigned long time) {
     setMotorSpeed(constants::RIGHT_MOTOR, rightMotorSpeed, rightReverse);
 
     // `time` is ignored for 45 deg turn moves, always move the 45 deg time
-    if (moveKind == RvrMoveKind::turnLeft45 || moveKind == RvrMoveKind::turnLeft45) {
+    if (moveKind == RvrMoveKind::turnLeft45 || moveKind == RvrMoveKind::turnRight45) {
         delay(globals::MILLIS_45_DEG);
     } else {
         // Move for provided time

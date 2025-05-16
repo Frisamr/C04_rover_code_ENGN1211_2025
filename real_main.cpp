@@ -26,7 +26,7 @@ using namespace globals;
 uint16_t globals::MILLIS_PER_CM = 193;
 
 // how long (in ms) it takes the rover to turn 1 degree
-unsigned long globals::MILLIS_45_DEG = 1003;
+unsigned long globals::MILLIS_45_DEG = 863;
 
 // These will be overwritten as the program runs. Don't change them.
 
@@ -67,7 +67,7 @@ void loop() {
 
     //demo_level_1_part2();
     //demo_level_2();
-    //demo_level_345();
+    demo_level_345();
 
     /* testing routines */
 
@@ -75,7 +75,7 @@ void loop() {
     //testSonarReliability();
     //testServoAngle();
     //testMovement(RvrMoveKind::driveFwd, timeToDriveDist(0.5), 1);
-    testMovement(RvrMoveKind::turnLeft45, 999, 8);
+    //testMovement(RvrMoveKind::turnRight45, 999, 2);
 }
 
 /****************** CUSTOM LOGGING PREFIX ******************************/
