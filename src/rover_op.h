@@ -47,7 +47,8 @@ SonarReading takeReadingAtAngle(int angle);
  * Perform a rover movement.
  *
  * @param move The type of movement to perform.
- * @param time How long the rover will do the movement. Measured in milliseconds.
+ * @param time How long the rover will do the movement. Measured in milliseconds for drive moves and
+ * microseconds for turn moves.
  * @return void
  */
 void doRvrMove(RvrMoveKind moveKind, unsigned long time);

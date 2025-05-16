@@ -27,7 +27,7 @@ namespace constants {
     constexpr uint16_t MILLIS_PER_CM = 193;
 
     // how long (in ms) it takes the rover to turn 1 degree
-    constexpr unsigned long MILLIS_PER_DEG = 17;
+    constexpr unsigned long MICROS_PER_DEG = 21200;
 
     // how close the rover will aim to drive to the left wall, in cm
     constexpr float WALL_DIST = 3.5;

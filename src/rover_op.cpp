@@ -46,7 +46,7 @@ RvrMoveWrapper turn90() {
         if (left.distance > 23.0) {
             RvrMoveWrapper move = {
                 RvrMoveKind::turnLeft,
-                90 * constants::MILLIS_PER_DEG,
+                90 * constants::MICROS_PER_DEG,
             };
             return move;
         }
@@ -160,12 +160,27 @@ void doRvrMove(RvrMoveKind moveKind, unsigned long time) {
     int rightMotorSpeed;
     getMoveSpeeds(moveKind, leftMotorSpeed, rightMotorSpeed);
 
+    unsigned long delay_ms;
+    unsigned int delay_us;
+
+    // time is in milliseconds for drive moves
+    if (moveKind == RvrMoveKind::driveFwd || moveKind == RvrMoveKind::driveBack) {
+        delay_ms = time;
+    }
+    // time is in microseconds for turn moves
+    if (moveKind == RvrMoveKind::turnLeft || moveKind == RvrMoveKind::turnRight) {
+        delay_ms = (time / 1000);
+        delay_us = (time % 1000);
+    }
+    ALog.traceln("got delay_ms %u, delay_us %d", delay_ms, delay_us);
+
     // Spin both motors
     setMotorSpeed(constants::LEFT_MOTOR, leftMotorSpeed, leftReverse);
     setMotorSpeed(constants::RIGHT_MOTOR, rightMotorSpeed, rightReverse);
 
     // Move for provided time
-    delay(time);
+    delay(delay_ms);
+    delayMicroseconds(delay_us);
 
     // Stop the motors. The motors brake when speed is 0, so the `reverse` setting doesn't matter
     setMotorSpeed(constants::LEFT_MOTOR, 0, false);

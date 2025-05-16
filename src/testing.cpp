@@ -66,7 +66,7 @@ void demo_level_1_part2() {
     for (int idx = 0; idx < 4; idx += 1) {
         doRvrMove(RvrMoveKind::driveFwd, 30 * constants::MILLIS_PER_CM);
         delay(50);
-        doRvrMove(RvrMoveKind::turnLeft, 90 * constants::MILLIS_PER_DEG);
+        doRvrMove(RvrMoveKind::turnLeft, 90 * constants::MICROS_PER_DEG);
         delay(50);
     }
 
